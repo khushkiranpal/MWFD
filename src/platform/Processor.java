@@ -25,7 +25,7 @@ import taskGeneration.Job;
  */
 public class Processor {
 	private  long id;
-	private boolean busy;
+	private boolean busy= false;
 	private static long count=0;
 	private long idleStartTime ;
 	private long idleEndTime;
@@ -33,7 +33,10 @@ public class Processor {
 	public long idleTime=0;
 	public long sleepTime=0;
 	public long activeTime=0;
+	private long endTimeCurrentJob;
 	public long  totalJobsExecByProc =0;
+	private Job currentJob;
+	
 	// PROCESSOR STATE  ACTIVE  1, 	IDLE   -1, 	SLEEP   0
      private ProcessorState proc_state;
      
@@ -49,8 +52,12 @@ public class Processor {
 	private ArrayList<Long> jobs= new ArrayList<Long>();
 	private PriorityQueue<Long> startBusyTime = new PriorityQueue<Long>();
 	private PriorityQueue<Long> endBusyTime = new PriorityQueue<Long>();
-	public ArrayList<ITask> taskset = new ArrayList<ITask>();
 	public ISortedJobQueue pendingJobs = new SortedJobQueue(); // dynamic jobqueue 
+
+	
+	public ArrayList<ITask> taskset = new ArrayList<ITask>();
+	public ISortedJobQueue primaryJobQueue = new SortedJobQueue();
+	public ISortedJobQueue backupJobQueue = new SortedJobQueue();
 
 	/**
 	 * 
@@ -74,6 +81,21 @@ public class Processor {
 		//this.jobsExeOnProc = null;
 	}
 	
+	
+
+	/**
+	 * @return the endTimeCurrentJob
+	 */
+	public long getEndTimeCurrentJob() {
+		return endTimeCurrentJob;
+	}
+
+	/**
+	 * @param endTimeCurrentJob the endTimeCurrentJob to set
+	 */
+	public void setEndTimeCurrentJob(long endTimeCurrentJob) {
+		this.endTimeCurrentJob = endTimeCurrentJob;
+	}
 
 	/**
 	 * @return the taskset
@@ -90,17 +112,33 @@ public class Processor {
 	}
 
 	/**
-	 * @return the pendingJobs
+	 * @return the primaryJobQueue
 	 */
 	public ISortedJobQueue getPendingJobs() {
-		return pendingJobs;
+		return primaryJobQueue;
 	}
 
 	/**
-	 * @param pendingJobs the pendingJobs to set
+	 * @param primaryJobQueue the primaryJobQueue to set
 	 */
 	public void setPendingJobs(ISortedJobQueue pendingJobs) {
-		this.pendingJobs = pendingJobs;
+		this.primaryJobQueue = pendingJobs;
+	}
+
+	
+	
+	/**
+	 * @return the currentJob
+	 */
+	public Job getCurrentJob() {
+		return currentJob;
+	}
+
+	/**
+	 * @param currentJob the currentJob to set
+	 */
+	public void setCurrentJob(Job currentJob) {
+		this.currentJob = currentJob;
 	}
 
 	/**

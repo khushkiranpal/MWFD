@@ -83,7 +83,7 @@ public class ScheduleRMS_EASS_MWFD {
     	boolean primaryBusy=false;
     	boolean spareBusy= true;
     	boolean deadlineMissed = false;
-    	Job lastExecutedJob= null;
+    	Job lastExecutedJob= null, primaryJob, backupJob;
         ProcessorState proc_state = null;
         
     	  int id = 0;  // idle slot id 
@@ -136,7 +136,7 @@ public class ScheduleRMS_EASS_MWFD {
 	    	System.out.println(" hyper  "+hyper);  
 
 	       // if(hyper>100000000)
-	        	hyper = 30;
+	        	hyper = 35;
 		
 			
     	ParameterSetting ps = new ParameterSetting();
@@ -194,14 +194,25 @@ public class ScheduleRMS_EASS_MWFD {
     	 if (fq>1)
     		 continue;
     	
-    	 fq= Math.max(U_SUM, 0.42);
+    	 fq= Math.max(U_SUM, CRITICAL_freq);
      	ps.set_freq(taskset,Double.valueOf(twoDecimals.format(fq)));   // set frequency
      	System.out.println("frequency   " +fq+" usum  "+U_SUM);
      	schedulability = schedule.worstCaseResp_TDA_RMS(taskset);//, fq);
-   	  System.out.println("on  one processor   "+schedulability+"  at fq "+fq);
 
+     	//System.out.println("on  one processor   "+schedulability+"  at fq "+fq);
+   	
      	
-   	  do{
+     	ps.setResponseTime(taskset);    
+     	ps.setPromotionTime(taskset);       //SET PROMOTION TIMES
+
+    	/*for(ITask t : taskset)
+    	{
+    	System.out.println("in taskset id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+"  acet  "+t.getACET());
+    	System.out.println("slack    "+t.getSlack()+"   response  "+t.getResponseTime());
+    	}*/
+   	  
+     	//ALLOCATION STARTED 
+   	  do{      // WHILE ALL PROCESSORS HAVE SCHEDULABLE TASKSETS ON GIVEN FREQUENCIES 
      	
      		for(Processor pMin : freeProcList)
      		{
@@ -211,16 +222,7 @@ public class ScheduleRMS_EASS_MWFD {
          		System.out.println("processor   "+pMin.getId()+"   size  "+pMin.taskset.size()+"  w  "+pMin.getWorkload());
      		}    		
      	
-
-    	ps.setResponseTime(taskset);    
-    	ps.setPromotionTime(taskset);       //SET PROMOTION TIMES
-    
-    /*	for(ITask t : taskset)
-    	{
-    	System.out.println("in taskset id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+"  acet  "+t.getACET());
-    	System.out.println("slack    "+t.getSlack()+"   response  "+t.getResponseTime());
-    	}
-    	*/
+   	
     	
 	//ALLOCATION OF PRIMARIES
     	
@@ -249,16 +251,16 @@ public class ScheduleRMS_EASS_MWFD {
     		
     	}
     	
-    	
+    	//ALLOCATION OF BACKUPS
     	for(ITask t : taskset)
     	{
-    		double u = Double.valueOf(twoDecimals.format(((double)t.getC()/(double)t.getD()))), work=1;
-    		ITask backup;
+    		double u = Double.valueOf(twoDecimals.format(((double)t.getWCET_orginal()/(double)t.getD()))), work=1;
+    		ITask backup_task;
     		Processor minP=null;
     	//	System.out.println(" u backup  "+u);
     		for(Processor pMin : freeProcList)
     		{
-    			if (pMin == t.getP())
+    			if (pMin == t.getP())   // IF PRIMARY PROCESSOR CONTAINS THE TASK, ALLOCATE BACKUP ON SOME OTHER PROCESSOR
     				continue;
     			if(work >pMin.getWorkload())
     			{
@@ -268,17 +270,21 @@ public class ScheduleRMS_EASS_MWFD {
     		//	System.out.println("work   "+work+"  minP  "+minP.getId()+ "  pMin  "+pMin.getId());
         		
     		}
-    		backup = t.cloneTask();
-    		backup.setPrimary(false);
-    		minP.taskset.add(backup);
+    		t.setBackupProcessor(minP);
+    		backup_task = t.cloneTask_MWFD_RMS_EEPS();
+    		backup_task.setPrimary(false);  //setup backup processor
+    		minP.taskset.add(backup_task);
     		minP.setWorkload(Double.valueOf(twoDecimals.format(minP.getWorkload()+u)));
-    		backup.setP(minP);
+    		backup_task.setP(minP);
     	}
+    	
+    	//CHECK SCHEDULABILITY ON ALL PROCESSORS
+    	
     	for(Processor pMin : freeProcList)
 		{
     		
-    	//	System.out.println("processor   "+pMin.getId()+"   size  "+pMin.taskset.size()+"  w  "+pMin.getWorkload());
-    		/*for(ITask t : pMin.taskset)
+    		System.out.println("processor   "+pMin.getId()+"   size  "+pMin.taskset.size()+"  w  "+pMin.getWorkload());
+    	/*	for(ITask t : pMin.taskset)
     			
         	{
     			System.out.println("task   "+t.getId()+"  u  "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
@@ -316,7 +322,7 @@ public class ScheduleRMS_EASS_MWFD {
     	
     	long temp=0;
 		ISortedJobQueue activeJobQ = new SortedJobQueue(); // dynamic jobqueue 
-		TreeSet<Job> spareQueue = new TreeSet<Job>(new Comparator<Job>() {
+		TreeSet<Job> backupQueue = new TreeSet<Job>(new Comparator<Job>() {
 	          @Override
 	          public int compare(Job t1, Job t2) {
 	                         
@@ -329,7 +335,7 @@ public class ScheduleRMS_EASS_MWFD {
 		
 	
 			
-			Job j,  spareJob = null; //job
+			Job j;//,  backupJob = null; //job
 		TreeSet<Long> activationTimes = new TreeSet<Long>();
 	//	TreeSet<Long> promotionTimes = new TreeSet<Long>();
 	ArrayList <Long> promotionTimes = new ArrayList<Long>();
@@ -345,21 +351,25 @@ public class ScheduleRMS_EASS_MWFD {
 		for(ITask t : taskset)  // activate all tasks at time 0
 		{
 					temp=0;
-					j =  t.activateRMS_energy_ExecTime(time);  ////	remainingTime =  (long)ACET;  ////////////////
+					j =  t.activate_MWFD_RMS_EEPS(time);  
 					j.setPriority(t.getPriority());
-					spareJob = j.cloneJob();
-				//	spareJob.setACET(aCET);
-				//	System.out.println("spare acet  "+spareJob.getAverage_CET()+"  primary   "+j.getACET());
-					spareJob.setCompletionSuccess(false);
-					activeJobQ.addJob(j);  //////ADD TO PRIMARY QUEUE
 					j.setCompletionSuccess(false);
-					spareQueue.add(spareJob);   /////ADD TO SPARE  QUEUE
-				//	System.out.println("time   "+time+"out  activeJobQ.first().getActivationDate()  "+activeJobQ.first().getActivationDate());
-					//System.out.println("  wcet  "+t.getC()+"  Bcet  "+t.getBCET()+ " ACET "+t.getACET());
+					Processor p;
+					p= j.getProc();  // get the processor on which task has been allocated
+					p.primaryJobQueue.addJob(j);
+				//	System.out.println("task  "+t.getId()+"  job  "+j.getJobId()+"  p  "+p.getId()+"  queue size  "+p.primaryJobQueue.size());
+					//backup addition
+					backupJob = j.cloneJob_MWFD_RMS_EEPS();
+					backupJob.setPrimary(false);
+					backupJob.setCompletionSuccess(false);
+					p=j.getBackupProcessor();
+					p.backupJobQueue.addJob(backupJob);
+			/*		System.out.println("task  "+t.getId()+"  backup job  "+backupJob.getJobId()+" primary  "+backupJob.isPrimary()+
+							"  p  "+p.getId()+"  queue size  "+p.backupJobQueue.size());
+			*/		
 					
-					
-				//	System.out.println("active  job  "+j.getTaskId()+"  acet  "+spareJob.getRemainingTime()+  
-				  //  		"  spare   "+ spareJob.getTaskId()+"  acet  "+j.getACET());
+					activeJobQ.addJob(j);  //////ADD TO PRIMARY QUEUE
+					backupQueue.add(backupJob);   /////ADD TO SPARE  QUEUE
 					while (temp<=hyper)
 					{
 						
@@ -367,13 +377,12 @@ public class ScheduleRMS_EASS_MWFD {
 						temp+=t.getPeriod();
 						activationTimes.add(temp);
 						promotionTimes.add((long) (t.getSlack()));
-
 						promotionTimes.add((long) (t.getSlack()+temp));
 					}
 						
 		}
 		
-	//	System.out.println("activationTimes  "+activationTimes.size()+"  promotionTimes  "+promotionTimes.size());
+//		System.out.println("activationTimes  "+activationTimes.size()+"  promotionTimes  "+promotionTimes.size());
 		promotionTimes.sort(new Comparator <Long>() {
 	          @Override
 	          public int compare(Long t1, Long t2) {
@@ -384,7 +393,7 @@ public class ScheduleRMS_EASS_MWFD {
 	        	 
 	          }
 	          });
-	/*	Iterator itr = promotionTimes.iterator();
+		/*Iterator itr = promotionTimes.iterator();
 		while(itr.hasNext())
 			System.out.println("promotionTimes   "+itr.next());
 	  	*/
@@ -392,169 +401,74 @@ public class ScheduleRMS_EASS_MWFD {
               //  writer1.write("\n\nSCHEDULE\nTASK ID  JOBID  ARRIVAL Av_CET WCETor DEADLINE  isPreempted STARTTIME ENDTIME  \n");
 
         nextActivationTime=  activationTimes.pollFirst();
+          System.out.println("nextActivationTime  "+nextActivationTime);
+    	 timeToNextPromotion = promotionTimes.get(0);
+    		for (Processor proc : freeProcList)
+        	{
+    			System.out.println("p  "+proc.getId()+"   primary   "+proc.primaryJobQueue.size()+"  backup   "+proc.backupJobQueue.size());
+        	}
+    	 
+       
+        //START SCHEDULING///////////////////////////////START SCHEDULING////////
         
-  //  System.out.println("nextActivationTime  "+nextActivationTime);
-    	
-    /*   Iterator<Job> itr = spareQueue.iterator();
-       while(itr.hasNext())
-       {
-			Job task1 = itr.next();
-    	   System.out.println("task   "+task1.getTaskId()+"  promotion  "+ task1.getPromotionTime());
-       }
-*/
-    //  int c=0;
-        timeToNextPromotion = promotionTimes.get(0);
         while(time<hyper)
     	{
-    	//	if(time>21000)
-        	//System.out.println("hyper  "+hyper+"  time  "+time);
-    		
-    		
-    		if (!spareQueue.isEmpty() && spareBusy==false  )
-    		{
-    	//	System.out.println("   time   "+time+"  spareBusy   "+spareBusy+ "  task  id  "+spareQueue.first().getTaskId());
-    		
-    			while (!spareQueue.isEmpty() && time >= spareQueue.first().getPromotionTime()   )
-    		//	if( time >= spareQueue.first().getPromotionTime() )
-    			{
-    				
-    	//		System.out.println("  promotion time "+spareQueue.first().getPromotionTime()+"  task  "+spareQueue.first().getTaskId() 
-    		//				+"  completion  "+spareQueue.first().isCompletionSuccess() );
-    				
-    				spareJob= 	spareQueue.pollFirst();
-    			//	System.out.println("  timeToNextPromotion  "+timeToNextPromotion+" "+spareJob.getPromotionTime());
-    			//	promotionTimes.remove(0);
-    				
-    				if (!spareQueue.isEmpty())
-    					timeToNextPromotion		= spareQueue.first().getPromotionTime();
-    				else
-    				{
-    					while (spareJob.getPromotionTime()!=promotionTimes.get(0))
-    					{
-    		//				System.out.println("promotionTimes.get(0)  "+promotionTimes.get(0)+"   spareJob.getPromotionTime()  "+spareJob.getPromotionTime());
-    						promotionTimes.remove(0);
-    						
-    					}
-    					promotionTimes.remove(0);
-    					timeToNextPromotion = promotionTimes.get(0);
-    					
-    				}
-    				
-    			//	timeToNextPromotion = promotionTimes.get(0);
-    		/*	System.out.println("time  "+time  +"  spare job  "+ spareJob.getTaskId()+"  size  "+promotionTimes.size()+
-    						"  timeToNextPromotion  "+timeToNextPromotion+" "+spareJob.getPromotionTime()+"  faulty"+spareJob.isFaulty());
-    		*/		if (spareJob.isCompletionSuccess()==false || spareJob.isFaulty()==true)
-    				{ 
-    				//	System.out.println("time    "+time  +"  spare job executed  "+ spareJob.getTaskId());
-    		    			
-    					
-    					spareBusy=true;
-    					spare.setBusy(true);
-    					spare_current[0]= spareJob;/////to make it visible
-    					spare.setProc_state(ProcessorState.ACTIVE);
-    			  //  writer1.write(spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
-	//    	  "\t"+spareJob.getRomainingTimeCost()+"\t"+spareJob.getAbsoluteDeadline()+"\t"+spareJob.isPreempted+"\t\t"+time+"\t");
-	          			
-    	  //  			System.out.println(" time  "+time+"  spareBusy   "+spareBusy+"  promotion time "+spareJob.getPromotionTime());
-    					//spare.setActiveTime(spareActiveTime++);
-    				spareEndTime = (long)time + (long) spareJob.getRomainingTimeCost();//.getAverage_CET()*1000 ;////////.getRomainingTimeCost();
-    				
-    		/*	System.out.println("  time "+time+"  job id "+spareJob.getJobId()+"  task id  "+spareJob.getTaskId()+
-    					"  job completed  "+spareJob.isCompletionSuccess()+"   spareEndTime with acet "+spareEndTime);
-    		*/	
-    				break;
-    				}
-    				else
-    				{
-    				//System.out.println(" continue  ");
-    					continue;
-    				}
-    				
-    				}
-    		}
-    		
-    		if ( (long)time == (long)spareEndTime && (time>0) && spare.getProc_state()== ProcessorState.ACTIVE)
-    			{
-    			
-    			     //  writer1.write(spareEndTime+"    spareEndTime\n");
-    //			System.out.println("time   "+time  +" spare queue   "+spareQueue.size());
-    	//		+"  task  "+spareQueue.first().getTaskId()+   					"  job  "+spareQueue.first().getJobId());
-    			 spare_current[0].setCompletionSuccess(true);
-    		//	 System.out.println("time   "+time  +" active primary job task  "+ current[0]);
- 			//	System.out.println("time    "+time+"  size  "+activeJobQ.size());
-    			
-    			 
-    			 // DELETE THE RUNNING JOB  
- 				
- 				if(current[0]!=null &&current[0].getTaskId()== spare_current[0].getTaskId() &&
- 						current[0].getJobId()== spare_current[0].getJobId() 
- 						  && primary.getProc_state()==ProcessorState.ACTIVE && spareBusy == true)
- 				{
- 					primary.setProc_state(proc_state.IDLE);//-------------------
- 					primaryBusy = false;  // set processor free
- 					current[0].setEndTime(spareEndTime);  // set endtime of job
-	        		current[0].setCompletionSuccess(true);//-------------------
-	        	//	completedJobs.add(lastExecutedJob);
-	      //  	     System.out.println("time   "+time+"  primary   task  "+current[0].getTaskId()+ "  success of primary and spare  "+current[0].isCompletionSuccess());
-	        		 //  writer.write(spareEndTime+"    spareEndTime\n");
- 				}
- 					
- 				
- 				// DELETE THE COMPLETED JOB FROM ACTIVE QUEUE
-    			 Iterator<Job> acticeItr = activeJobQ.iterator();
-    			 while(acticeItr.hasNext())
-    			 {
-    				 Job temp1;
-    				 temp1  = acticeItr.next();
-    		//		 System.out.println("primaary pending  task  "+temp1.getTaskId());
-    		    		 
-    				 if(temp1.getTaskId()== spare_current[0].getTaskId() && temp1.getJobId()== spare_current[0].getJobId())
-    				 {
-    					 temp1.setCompletionSuccess(true);
-    					 activeJobQ.remove(temp1);
-    	//				 System.out.println("time    "+time+" primaary pending task  "+temp1.getTaskId()+"  spare"+spare_current[0].getTaskId() );
-    				    break;
-    				 }
-    			 }
-    			 
-    			 
-    			 
-    			 
-    			//	timeToNextPromotion = promotionTimes.pollFirst();//spareQueue.first().getPromotionTime()- (long)time;
-    		//	System.out.println("timeToNextPromotion   "+timeToNextPromotion+" time "+time);//+"  spareQueue.first().getPromotionTime()   "+spareQueue.first().getPromotionTime());
-    			if( (timeToNextPromotion<=CRITICAL_TIME) && !spareQueue.first().isCompletionSuccess())
-    				spare.setProc_state(proc_state.IDLE);
-    			else
-    				spare.setProc_state(proc_state.SLEEP);
-    			
-    			
-    			spare.setBusy(false);
-    			spareBusy=false;
-    			
-    			}
-    		
-    		if (spareBusy && spare.getProc_state()==ProcessorState.ACTIVE)
-    		{
-    			spare.activeTime++;
-		//		System.out.println( "time   "+time+" active   "+spare.getActiveTime()+ " proc state  "+spare.getProc_state());
-				
-    		}
-    		else if (!spareBusy && spare.getProc_state()==ProcessorState.SLEEP)
-    		{
-    			spare.sleepTime++;
-    		}
-    		else if (spare.getProc_state()==ProcessorState.IDLE)
-    			spare.idleTime++;
-    		
-    		
-    		if( (long)time== (long)nextActivationTime) // AFTER 0 TIME JOB ACTIVAIONS
+        	System.out.println(" time  "+time);
+        	
+        	// BACKUP JOB CHECKING AND EXECUTION
+        	for (Processor proc : freeProcList)
+        	{
+        		while(!proc.backupJobQueue.isEmpty() && time>=proc.backupJobQueue.first().getPromotionTime() )
+        		{
+        			  Job b = proc.backupJobQueue.pollFirst();
+        			  System.out.println("   in backing up  time   "+time + "  p  "+proc.getId()+ " task  "+b.getTaskId()+" job "+b.getJobId());
+        			  
+        			  // if processor is freee and job has not completed on primary
+        			  if (!proc.isBusy() && !b.isCompletionSuccess()) 
+        			{
+        			System.out.println("       backup           time   "+time + "  p  "+proc.getId()+ " task  "+b.getTaskId()+" job "+b.getJobId());
+        		  //---------START EXECUTION 
+        			proc.setCurrentJob(b);
+        			proc.setProc_state(proc_state.ACTIVE);
+    				proc.getCurrentJob().setStartTime(time);
+    				//set end time
+    				proc.getCurrentJob().setEndTime(time+proc.getCurrentJob().getRomainingTimeCost());  // time + wcet_original 
+    				proc.setEndTimeCurrentJob(proc.getCurrentJob().getEndTime()-1);
+    				proc.setBusy(true);
+        			
+        			
+        			break;
+        		    
+        			}
+        			else if (proc.isBusy() && proc.getCurrentJob().isPrimary() && !b.isCompletionSuccess()) // processor is busy with main/primary  task
+        			{
+        				System.out.println("processor busy");
+        				//preempt the  currently running primary job
+        				Job current1 = proc.getCurrentJob();
+        				current1.setRemainingTime(current1.getRemainingTime()-(time- current1.getStartTime()));  // total time- executed time
+        				proc.primaryJobQueue.addJob(current1);
+        				// now start the backup job
+        				 //START EXECUTION 
+        				proc.setCurrentJob(b);
+            			proc.setProc_state(proc_state.ACTIVE);
+        				proc.getCurrentJob().setStartTime(time);
+        				//set end time
+        				proc.getCurrentJob().setEndTime(time+proc.getCurrentJob().getRomainingTimeCost());  // time + wcet_original 
+        				proc.setEndTimeCurrentJob(proc.getCurrentJob().getEndTime()-1);
+        				proc.setBusy(true);
+        				break;
+        			}
+        		}
+        	}
+
+        	//new activation
+        	if( (long)time== (long)nextActivationTime) // AFTER 0 TIME JOB ACTIVAIONS
 			{
 	
     			if (!activationTimes.isEmpty())
     			nextActivationTime=  activationTimes.pollFirst();
-    		/*	else
-    				break;*/
-   		//    System.out.println("nextActivationTime  "+nextActivationTime+" size  "+activationTimes.size());
+    		
+   		   System.out.println("nextActivationTime  "+nextActivationTime+" size  "+activationTimes.size());
 
     			for (ITask t : taskset) 
 				{
@@ -565,280 +479,151 @@ public class ScheduleRMS_EASS_MWFD {
 			//		System.out.println("  activationTime  "+activationTime);
 					long temp1= (long) activationTime, temp2 =(long) time;
 					if (temp1==temp2)
-						n= t.activateRMS_energy_ExecTime(time); ///	remainingTime =  (long)ACET;  ////////////////
+						n= t.activate_MWFD_RMS_EEPS(time); ///	remainingTime =  (long)ACET;  ////////////////
 					
 					if (n!=null)
 					{
+						
+						n.setPriority(t.getPriority());
 						n.setCompletionSuccess(false);
-						activeJobQ.addJob(n);  // add NEW job ///////////ADD TO PRIMARY QUEUE
-						// System.out.println("time   "+time+"  task  "+activeJobQ.first().getTaskId()+
-				//				"  out  activeJobQ.first().getActivationDate()  "+activeJobQ.first().getActivationDate()
-					//			+"  period  "+activeJobQ.first().getPeriod());
-			    		// System.out.println(" size  "+activeJobQ.size());
- 
-						spareJob = n.cloneJob();
-						spareJob.setCompletionSuccess(false);
-						spareQueue.add(spareJob);	    ///////////ADD TO SPARE QUEUE
-						// System.out.println("spare size  "+spareQueue.size());
-						 
+						Processor p;
+						p= n.getProc();  // get the processor on which task has been allocated
+						p.primaryJobQueue.addJob(n);
+						System.out.println("task  "+t.getId()+"  job  "+n.getJobId()+"  p  "+p.getId()+"  queue size  "+p.primaryJobQueue.size());
+						//backup addition
+						backupJob = n.cloneJob_MWFD_RMS_EEPS();
+						backupJob.setPrimary(false);
+						backupJob.setCompletionSuccess(false);
+						p=n.getBackupProcessor();
+						p.backupJobQueue.addJob(backupJob);
+						System.out.println("task  "+t.getId()+"  backup job  "+backupJob.getJobId()+" primary  "+backupJob.isPrimary()+
+								"  p  "+p.getId()+"  queue size  "+p.backupJobQueue.size());
 						
-						// System.out.println("spareJob  p time"+spareJob.getPromotionTime());
 						
-						//  System.out.println("active  job  "+n.getTaskId()+"  acet  "+n.getRemainingTime()+  
-						 //   		"  spare   "+ spareJob.getTaskId()+"  acet  "+spareJob.getACET());
+						activeJobQ.addJob(n);  //////ADD TO PRIMARY QUEUE
+						backupQueue.add(backupJob);   /////ADD TO SPARE  QUEUE
 						
 					}
 				}
 				
 			} 
-    		
-    //		System.out.println("time   "+time+"out  activeJobQ.first().getActivationDate()  "+activeJobQ.first().getActivationDate());
+        	
     		//////////////////PREEMPTION////////////////////////
-    		
-    		if(time>0 && !activeJobQ.isEmpty() && time==activeJobQ.first().getActivationDate() && current[0]!=null )
-    		{
-        		// System.out.println("activeJobQ.first().getActivationDate()  "+activeJobQ.first().getActivationDate());
-
-    			if (activeJobQ.first().getPeriod()<current[0].getPeriod())
-    			{
-        			// System.out.println("preemption  ");
-
-    				primaryBusy=false;
-    	 //  writer.write("\t"+time+"\t preempted\n");
-    				executedTime = time - current[0].getStartTime();
-    				// System.out.println("time   "+time+"  executedTime  "+executedTime);
-
-
-    				current[0].setRemainingTime(current[0].getRemainingTime()-executedTime);
-    				if (current[0].getRemainingTime()>0)
-    				activeJobQ.addJob(current[0]);
-    				// System.out.println("preempted job  "+current[0].getTaskId()+" remaining time "+current[0].getRemainingTime()+ "   wcet "+
-    		//			current[0].getRomainingTimeCost());
-    			}
-    		}
-    		
-    		
-    		
-    		if ((primaryBusy == false ) )// SELECT JOB FROM QUEUE ONLY if processor is free
-	        	 {
-	                	
-	        		j = activeJobQ.pollFirst(); // get the job at the top of queue
-	        		
-	        		// QUEUE MAY BE EMPTY , SO CHECK IF IT IS  NOT NULL
-	        		if (j!=null && j.isCompletionSuccess()==false)      // if job in queue is null 
+        	for (Processor proc : freeProcList)
+        	{
+        		if(!proc.primaryJobQueue.isEmpty()  && proc.getCurrentJob().getPeriod()>proc.primaryJobQueue.first().getPeriod())
+        		{
+        			Job lowP = proc.getCurrentJob() , highP = proc.primaryJobQueue.first();
+        			lowP.setRemainingTime(lowP.getRemainingTime()- (time-lowP.getStartTime()));
+        			proc.primaryJobQueue.addJob(lowP);
+        			// start high priority
+        			proc.setCurrentJob(highP);
+        				//set end time
+        				proc.getCurrentJob().setEndTime(time+proc.getCurrentJob().getRemainingTime());
+        				proc.setEndTimeCurrentJob(proc.getCurrentJob().getEndTime()-1);
+        				proc.setBusy(true);
+        			        			
+        		}
+        	
+        	}
+        	
+        	// PRIMARY JOB CHECKING AND EXECUTIOM
+        	for (Processor proc : freeProcList)
+        	{
+        		if(!proc.primaryJobQueue.isEmpty() && proc.isBusy()==false )
+        		{
+        			proc.setCurrentJob( proc.primaryJobQueue.pollFirst());
+        			System.out.println("task started   "+proc.getCurrentJob().getTaskId());
+        			if (proc.getCurrentJob()!=null && proc.getCurrentJob().isCompletionSuccess()==false)      // if job in queue is null 
 	        		{
-	        //			System.out.println("time   "+time +"  size  "+activeJobQ.size()+"  task  "+j.getTaskId()+
-		      //  				"  success active job   "+j.isCompletionSuccess());
-	                	primary.setProc_state(proc_state.ACTIVE);
-	        			
-	                		
-	        			
-	                //	System.out.println("time   "+time+"   active   "+primary.getActiveTime());
-	        			//  IDLE SLOTS RECORD
-	                			if (idle!=0)
-	                			{
-	                	 //  writer.write("endtime  "+time+"\n");
-	                				slot.setLength(idle);  // IF PROCESSOR IS IDLE FROM LONF TIME, RECORD LENGTH OF IDLESLOT
-	                				IdleSlot cloneSlot = (IdleSlot) slot.cloneSlot(); // CLONE THE SLOT
-	                				slots.add(cloneSlot); // ADD THE SLOT TO LIST OR QUEUE
-	                			}
-	                			//RE- INITIALIZE IDLE VARIABLE FOR IDLE SLOTS
-	                			idle =0;   // if job on the queue is not null, initialize  processor idle VARIABLE to 0
-	                			
-	        			current[0]=j;  // TO MAKE IT VISIBLE OUTSIDE BLOCK
-    			//	System.out.println("current[0]  "+current[0].getTaskId()+" start time "+(long)time);
-
-	        //  writer.write(j.getTaskId()+"\t  "+j.getJobId()+"\t"+j.getActivationDate()+"\t"+j.getACET()+
-	    //        		  "\t"+j.getRemainingTime()+"\t"+j.getAbsoluteDeadline()+"\t"+j.isPreempted+"\t\t"+time+"\t");
-	          			
-	        			
-	        				j.setStartTime(time);  // other wise start time is one less than current time 
-        											// BCOZ START TIME IS EQUAL TO END OF LAST EXECUTED JOB
+        				System.out.println("p  "+proc.getId()+"  task  "+proc.getCurrentJob().getTaskId()+"  job   "+proc.getCurrentJob().getJobId());
         				
-	        			endTime =  (time+j.getRemainingTime());
-	        	//		System.out.println("current[0]  "+current[0].getTaskId()+"   endTime  "+(long)endTime);
-	        			   primaryBusy = true;   //set  processor busy
-	        			   lastExecutedJob = j;    
+        				proc.setProc_state(proc_state.ACTIVE);
+        				proc.getCurrentJob().setStartTime(time);
+        				//set end time
+        				proc.getCurrentJob().setEndTime(time+proc.getCurrentJob().getRemainingTime());
+        				proc.setEndTimeCurrentJob(proc.getCurrentJob().getEndTime()-1);
+        				proc.setBusy(true);
 	        		}
-	        		else  // if no job in jobqueue
-	        		{
-
-		        		timeToNextArrival= nextActivationTime-lastExecutedJob.getEndTime(); 
-		        	//	System.out.println("nextActivationTime  "+nextActivationTime+"  lastExecutedJob.getEndTime   "+lastExecutedJob.getEndTime());
-		        //		System.out.println("time   "+time+"timeToNextArrival   "+timeToNextArrival);
-		        	
-		        		if (timeToNextArrival<CRITICAL_TIME)
-		        		{
-	        			primary.setProc_state(proc_state.IDLE);
-		        		primary.idleTime++;  ///-------------------
-		        		}
-	        			else
-	        			{
-	        				primary.setProc_state(proc_state.SLEEP);
-			        		primary.sleepTime++;//-------------------
-	        			}
-		        			
-	        			if (idle==0)  // if starting of idle slot
-	        			{
-	        //  writer.write("\nIDLE SLOT");
-	        				slot.setId(id++); // SET ID OF SLOT
-	                        slot.setStartTime(time);// START TIME OF SLOT
-	                        current[0] = null;
-	                       //  writer.write("\tstart time\t"+time+"\t");
-	                	}
-	        			
-	        			idle++; // IDLE SLOT LENGTH 
-	        			
-	        			slot.setEndTime(idle + slot.getStartTime()); // SET END TIME OF SLOT
-	                 } //end else IDLE SLOTS
-	               
-	        	 }
+        		}
+        		else
+        		{//---------------
+        		//	proc.setIdleStartTime(time);
+        		//	System.out.println("time  "+time+"   idle start   "+proc.getIdleStartTime());
+        		//	proc.idleTime++;
+        		}
+        	}
+        	
+        
+        	// count busy time
+        	for (Processor proc : freeProcList)
+        	{
+        		if (proc.getProc_state()==proc_state.ACTIVE)
+        		{
+        			proc.activeTime++;
+        			System.out.println("TIME  "+time+"  p  "+proc.getId()+" active  "+ proc.activeTime);;
+        			
+        		}
+        		if (proc.getProc_state()==proc_state.IDLE)
+        		{
+        			proc.idleTime++;
+        			System.out.println("TIME  "+time+"  p  "+proc.getId()+"  idle "+ proc.idleTime);;
+                	
+        		}
+        		if (proc.getProc_state()==proc_state.SLEEP)
+        		{	
+        			proc.sleepTime++;
+        			System.out.println("TIME  "+time+"  p  "+proc.getId()+" sleep  "+proc.sleepTime );;
+                	
+        		}
+        	}
+        	
+        	
+        	//at end time of any job in any processor
+        	for (Processor proc : freeProcList)
+        	{
+        		if(time== proc.getEndTimeCurrentJob())
+        		{
+        			proc.setProc_state(proc_state.IDLE);
+        			proc.setBusy(false);
+        			proc.getCurrentJob().setCompletionSuccess(true);
+        			System.out.println("  p  "+proc.getId()+"end time  "+proc.getEndTimeCurrentJob());
+        			
+        			
+        			// delete the backup job if not started
+        			Iterator<Job> itr_backup = proc.getCurrentJob().getBackupProcessor().backupJobQueue.iterator();
+        			while(itr_backup.hasNext())
+        			{
+        				Job backup = itr_backup.next();
+        				if(backup.getTaskId()==proc.getCurrentJob().getTaskId() && backup.getJobId()==proc.getCurrentJob().getJobId())
+        				{
+        					System.out.println(" time  "+time+"   p  "+proc.getId()+ "  backup p  " +proc.getCurrentJob().getBackupProcessor().getId()+
+        							"  delete task  "+	backup.getTaskId() +"  job  "+ backup.getJobId());
+        					backup.setCompletionSuccess(true);
+        					break;
+        				}
+        			}
+        	
+        		}
+        	}
+        	
+        	time++;
     		
-		//	System.out.println("out fault time  "+time+"  task  "+lastExecutedJob.getTaskId()+" job  "+lastExecutedJob.getJobId());
-
-    		
-    		/////////////////////////////FAULT INDUCTION
-    	//	if(time == 			11000)
-    		//{
-    	if ( fault.size()>0 )
-    		{
-		//	System.out.println("out fault time  "+time+"  task  "+lastExecutedJob.getTaskId()+" job  "+lastExecutedJob.getJobId());
-
-    		if(time==fault.get(0))
-    		
-    			{
-    				if (primary.getProc_state()==proc_state.ACTIVE )
-    				{	
-    			System.out.println("                       fault time  "+time+"                task  "+lastExecutedJob.getTaskId()+" job  "+lastExecutedJob.getJobId());
-    				
-    				lastExecutedJob.setCompletionSuccess(false);
-    				lastExecutedJob.setFaulty(true);
-    				
-    				 Iterator<Job> spareItr = spareQueue.iterator();
-        			 while(spareItr.hasNext())
-        			 {
-        				 Job temp1;
-        				 temp1  = spareItr.next();
-        		//		 System.out.println("primaary pending  task  "+temp1.getTaskId());
-        		    		 
-        				 if(temp1.getTaskId()== lastExecutedJob.getTaskId() && temp1.getJobId()== lastExecutedJob.getJobId())
-        				 {
-        					 temp1.setFaulty(true);
-        					
-        	//				 System.out.println("time    "+time+" primaary pending task  "+temp1.getTaskId()+"  spare"+spare_current[0].getTaskId() );
-        				    break;
-        				 }
-        			 }
-    				
-    				}
-    				fault.remove(0);
-    			}
     	}
-    	
-    	
-    			// CHECK DEADLINE MISS
-    			Iterator<Job> it = activeJobQ.iterator();
-				while (it.hasNext()) //CHECK FOR ALL ACTIVE JOBS
-				{
-					Job j1 = it.next();
-					if (j1.getAbsoluteDeadline()<time) // IF TIME IS MORE THAN THE DEADLINE, ITS A MISSING DEADLINE
-					{
-						System.out.println("deadline missed  task id "+j1.getTaskId()+"job id " + j1.getJobId()+"  deadline time  "+j1.getAbsoluteDeadline()+"  time "+time);
-						 //  writer.write("\ndeadline missed  task id "+j1.getTaskId()+"  deadline time  "+j1.getAbsoluteDeadline()+"  time "+time);
-						deadlineMissed= true;
-						
-						/*	writer.close();
-						System.exit(0);*/
-					}
-				}
-    			
-	        	//	System.out.println("hyper  "+hyper+"   time  "+Double.valueOf(twoDecimals.format((time)))+"  end time "+Double.valueOf(twoDecimals.format((endTime-1))));
-
-					// IF NOW TIME IS EQUAL TO ENDTIME OF JOB
-				
-			//	double temp1 = Double.valueOf(twoDecimals.format(time)), temp2= Double.valueOf(twoDecimals.format(endTime-1));
-		        	if ((long)time==(long)endTime-1 && lastExecutedJob.isCompletionSuccess()==false ) // if current time == endtime 
-		        	{
-		      
-		        	//		System.out.println("                time  "+time+"  end time "+ (endTime-1));
-		        		//	Job k =  executedList.get(noOfJobsExec-1);// get last executed job added to list or job at the top of executed list
-		        		primaryBusy = false;  // set processor free
-		        		lastExecutedJob.setEndTime(endTime);  // set endtime of job
-		        		
-		        		lastExecutedJob.setCompletionSuccess(true);//-------------------
-		        	//	completedJobs.add(lastExecutedJob);
-		        //	     System.out.println("time   "+endTime+"   task  "+lastExecutedJob.getTaskId()+ "  success   "+lastExecutedJob.isCompletionSuccess());
-		        		   //  writer.write(endTime+"    endtime\n");
-		        		// STOP THE RUNNING JOB ON SPARE IF PRIMARY HAS FINISHED IT SUCCESSFULLY
-		        		
-		        		if( spare.getProc_state()==ProcessorState.ACTIVE && lastExecutedJob.getTaskId()== spare_current[0].getTaskId() &&
-		        				lastExecutedJob.getJobId()== spare_current[0].getJobId() 
-		 						  )
-		 				{
-		 					spare.setProc_state(proc_state.IDLE);//-------------------
-		 				//	spareBusy = false;  // set processor free
-		 					spare_current[0].setEndTime(endTime);  // set endtime of job
-			        		spare_current[0].setCompletionSuccess(true);//-------------------
-			        	//	completedJobs.add(lastExecutedJob);
-			 //       	     System.out.println("time   "+time+"  spare   task  "+spare_current[0].getTaskId()+
-			   //     	    		 "  success of  spare and primary  "+spare_current[0].isCompletionSuccess());
-			        		    //  writer1.write(endTime+"    endTime\n");
-			        		if( (timeToNextPromotion<=CRITICAL_TIME) && !spareQueue.first().isCompletionSuccess())
-			    				spare.setProc_state(proc_state.IDLE);
-			    			else
-			    				spare.setProc_state(proc_state.SLEEP);
-			        		
-			        		spare.setBusy(false);
-			    			spareBusy=false;
-			        		
-			        		 //    writer1.write(endTime+"    endTime\n");
-		 				}
-		        		
-		        		
-		        		// DELETE JOB FROM SPARE QUEUE OR SET COMPLETION = SUCCESS
-		        		Iterator<Job> spareitr = spareQueue.iterator();
-		        		while(spareitr.hasNext())
-		        		{
-		        			Job spar = spareitr.next();
-		        			if (spar.getTaskId()==lastExecutedJob.getTaskId() && spar.getJobId()==lastExecutedJob.getJobId())
-		        			{
-		        				if (lastExecutedJob.isCompletionSuccess()==false)
-		        					spar.setCompletionSuccess(false);
-		        				else
-		        				spar.setCompletionSuccess(true);
-		        				break;
-		        			}
-		        		}
-		        		
-		        		
-		        		
-		    //     		System.out.println("hyper  "+hyper+"  time  "+time+"  busy "+busy);
-		        	}
-		        	
-		        /*	if(activeJobQ.isEmpty())
-		        	{
-		        	
-		        		timeToNextArrival= activationTimes.first()-lastExecutedJob.getEndTime(); 
-		        		System.out.println("activationTimes.first()  "+activationTimes.first()+"  lastExecutedJob.getEndTime   "+lastExecutedJob.getEndTime());
-		        		System.out.println("time   "+time+"timeToNextArrival   "+timeToNextArrival);
-		        	
-		        	}
-		        		*/
-		       if (primary.getProc_state()==proc_state.ACTIVE)
-		    	   primary.activeTime++;
-		        	
-		        	
-		        	if(!spareBusy)
-		        	spareIdleTime++;
-		        	
-				
-		    	time=time+1;
-		    	if (deadlineMissed)
-		    		break;
+        for (Processor proc : freeProcList)
+    	{
+    		
+    			System.out.println("out TIME  "+time+"  p  "+proc.getId()+" active  "+ proc.activeTime);;
+    		
+    			System.out.println("TIME  "+time+"  p  "+proc.getId()+"  idle "+ proc.idleTime);;
+            	
+    			System.out.println("TIME  "+time+"  p  "+proc.getId()+" sleep  "+proc.sleepTime );;
+            	
+    		
     	}
-    	System.out.println(" spare active time "+spare.getActiveTime()+"  sleep "+spare.getSleepTime()+"  idle  "+spare.getIdleTime());
+  /*  	System.out.println(" spare active time "+spare.getActiveTime()+"  sleep "+spare.getSleepTime()+"  idle  "+spare.getIdleTime());
     	System.out.println("primary  active time "+primary.getActiveTime()+"  sleep "+primary.getSleepTime()+"  idle  "+primary.getIdleTime());
-    	/*Iterator<Job> itr1 = spareQueue.iterator();
+    */	/*Iterator<Job> itr1 = spareQueue.iterator();
     	 while (itr1.hasNext())
     	 {
     		 
@@ -850,7 +635,7 @@ public class ScheduleRMS_EASS_MWFD {
     	double primaryEnergy, spareEnergy;
     	primaryEnergy = energyConsumed.energyActive(primary.activeTime, fq)+energyConsumed.energy_IDLE(primary.idleTime) +energyConsumed.energySLEEP(primary.sleepTime) ;
     	spareEnergy = energyConsumed.energyActive(spare.getActiveTime(), 1)+energyConsumed.energy_IDLE(spare.idleTime) +energyConsumed.energySLEEP(spare.sleepTime) ;
-    	
+  /*  	
     	System.out.println("primary  active energy"+energyConsumed.energyActive(primary.activeTime, fq)+"  idle  "+energyConsumed.energy_IDLE(primary.idleTime)
     	+" sleep  "+energyConsumed.energySLEEP(primary.sleepTime));
     	System.out.println("spare  active energy "+energyConsumed.energyActive(spare.getActiveTime(), 1)+"  idle  "+energyConsumed.energy_IDLE(spare.idleTime)
@@ -858,7 +643,7 @@ public class ScheduleRMS_EASS_MWFD {
     
     	
     	System.out.println("primaryEnergy   "+primaryEnergy +" spareEnergy  "+spareEnergy);
-    
+    */
     /*	 writer2.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
     	    	    +" "+ Double.valueOf(twoDecimals.format(fq))+" "+(double)primary.activeTime +" "+(double)primary.idleTime +" "+(double)primary.sleepTime 
     	    	    +" "+(double)spare.activeTime +" "+(double)spare.idleTime +" "+(double)spare.sleepTime +" "+Double.valueOf(twoDecimals.format(primaryEnergy))+

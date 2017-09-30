@@ -84,7 +84,26 @@ public  class Task implements ITask {
 		this.BCET = BCET;
 		
 	}
-	
+
+	// FOR rmsMWFD_RMS_EEPS Task(arrival,id, wcet,period, deadline,  priority,ACET,BCET );
+		public Task(long arrival, long id,long wcet, long period,long deadline, int priority, double ACET, 
+				double BCET	, Processor p, boolean primary,Processor backupProcessor) {
+			
+			this.C = wcet;
+			this.D = deadline;
+			this.T = period;
+			this.arrival = arrival;
+			this.wcet = wcet;
+			this.WCET_orginal = wcet;
+			this.period = period;
+			this.deadline = deadline;
+			this.priority = priority;
+			this.id  = id;
+			//this.id = ++count;
+			this.ACET = ACET;
+			this.BCET = BCET;
+			
+		}
 	public Task(long arrival,long id, long wcet, long period,long deadline, int priority) {
 		
 		this.C = wcet;
@@ -146,6 +165,20 @@ public void setP(Processor p) {
 }
 
 
+
+	/**
+ * @return the backupProcessor
+ */
+public Processor getBackupProcessor() {
+	return backupProcessor;
+}
+
+/**
+ * @param backupProcessor the backupProcessor to set
+ */
+public void setBackupProcessor(Processor backupProcessor) {
+	this.backupProcessor = backupProcessor;
+}
 
 	/**
  * @return the best_CET
@@ -320,6 +353,9 @@ public long getWCET_orginal() {
     		return new Task(arrival,id, WCET_orginal,period, deadline,  priority,ACET,BCET );
     	}
     
+        public ITask cloneTask_MWFD_RMS_EEPS() {
+    		return new Task(arrival,id, WCET_orginal,period, deadline,  priority,ACET,BCET,p,primary, backupProcessor );
+    	}
         
 	private final PriorityQueue<Job> activeJobs = new PriorityQueue<Job>(2,
 			new Comparator<Job>() {
@@ -375,7 +411,18 @@ public long getWCET_orginal() {
 	public  Job activateRMS_energy_ExecTime(long time) {
         JobId jobId = new JobId(this.getId(),nextJobId++);
         //       System.out.println("in task     "+"job id "+jobId.getJobId()+"  task id  " + jobId.getTaskId());
-        	Job job = new  Job(jobId, time, WCET_orginal, wcet, time + deadline, period, frequency, (long)(Slack+ time), BCET, ACET,Best_CET,average_CET);
+        	Job job = new  Job(jobId, time, WCET_orginal, wcet, time + deadline, period, frequency, (long)(Slack+ time), 
+        			BCET, ACET,Best_CET,average_CET);
+        		//getActiveJobs().add(job);
+        		//return job;
+        		return job;
+		}
+	
+	public  Job activate_MWFD_RMS_EEPS(long time) {
+        JobId jobId = new JobId(this.getId(),nextJobId++);
+        //       System.out.println("in task     "+"job id "+jobId.getJobId()+"  task id  " + jobId.getTaskId());
+        	Job job = new  Job(jobId, time, WCET_orginal, wcet, time + deadline, period, frequency, (long)(Slack+ time), 
+        			BCET, ACET,Best_CET,average_CET, p,primary, backupProcessor);
         		//getActiveJobs().add(job);
         		//return job;
         		return job;

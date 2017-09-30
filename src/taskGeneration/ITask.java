@@ -36,6 +36,17 @@ public interface ITask {
 	 * @param p the p to set
 	 */
 	public void setP(Processor p) ;
+	
+	
+	/**
+ * @return the backupProcessor
+ */
+public Processor getBackupProcessor() ;
+
+/**
+ * @param backupProcessor the backupProcessor to set
+ */
+public void setBackupProcessor(Processor backupProcessor) ;
 	/**
  * @return the c
  */
@@ -150,7 +161,7 @@ public void setDeadline(long deadline);
 		public int getPriority();
 		
 		public  Job activateRMS(long time) ;
-
+		public  Job activate_MWFD_RMS_EEPS(long time);
 		/**
 		 * Sets the priority of the task
 		 * 
@@ -164,6 +175,7 @@ public void setDeadline(long deadline);
 		 * @return clones task
 		 */
 		public ITask cloneTask();
+		 public ITask cloneTask_MWFD_RMS_EEPS();
 		
 		  public ITask cloneTask_RMS_double() ;
            //     public long getLaxity();

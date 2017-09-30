@@ -82,7 +82,8 @@ public class Job {
  //for MWFD
 	
 	public Job(JobId id, long activationDate2,long remainingTimeCost, long wcet, long absoluteDeadline2, long period, 
-			double freq, long promotionTime, double BCET, double ACET, double Best_CET, double average_CET , Processor p, boolean primary,Processor backupProcessor) { 
+			double freq, long promotionTime, double BCET, double ACET, double Best_CET, double average_CET
+			, Processor p, boolean primary,Processor backupProcessor) { 
 		jobId= id;
 		this.remainingTimeCost = remainingTimeCost;//(long)average_CET; ////////////////remainingTimeCost;//
 		remainingTime = wcet;//(long)ACET;  ////////////////wcet;//
@@ -137,7 +138,47 @@ public class Job {
 	 
 	 
 	 
-	 /**
+	 
+	 
+	 
+	 
+	/* *//**
+	 * @return the p
+	 *//*
+	public Processor getP() {
+		return p;
+	}
+	*//**
+	 * @param p the p to set
+	 *//*
+	public void setP(Processor p) {
+		this.p = p;
+	}*/
+	/**
+	 * @return the primary
+	 */
+	public boolean isPrimary() {
+		return primary;
+	}
+	/**
+	 * @param primary the primary to set
+	 */
+	public void setPrimary(boolean primary) {
+		this.primary = primary;
+	}
+	/**
+	 * @return the backupProcessor
+	 */
+	public Processor getBackupProcessor() {
+		return backupProcessor;
+	}
+	/**
+	 * @param backupProcessor the backupProcessor to set
+	 */
+	public void setBackupProcessor(Processor backupProcessor) {
+		this.backupProcessor = backupProcessor;
+	}
+	/**
 	 * @return the faulty
 	 */
 	public boolean isFaulty() {
@@ -457,7 +498,12 @@ public class Job {
     			period, frequency, (long)promotionTime,BCET,ACET,Best_CET, average_CET);
 
 	}
-	 
+	public Job cloneJob_MWFD_RMS_EEPS(){
+		//	return  new Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline, isPreemptive,type);
+	    	return new  Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline,
+	    			period, frequency, (long)promotionTime,BCET,ACET,Best_CET, average_CET,p,primary, backupProcessor);
+
+		}
 	
 	
     /**
