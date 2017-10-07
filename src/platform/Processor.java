@@ -4,6 +4,7 @@
 package platform;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.PriorityQueue;
 
 import queue.ISortedJobQueue;
@@ -36,7 +37,8 @@ public class Processor {
 	private long endTimeCurrentJob;
 	public long  totalJobsExecByProc =0;
 	private Job currentJob;
-	
+	private long nextActivationTime ;
+	private long timeToNextArrival;
 	// PROCESSOR STATE  ACTIVE  1, 	IDLE   -1, 	SLEEP   0
      private ProcessorState proc_state;
      
@@ -56,9 +58,28 @@ public class Processor {
 
 	
 	public ArrayList<ITask> taskset = new ArrayList<ITask>();
-	public ISortedJobQueue primaryJobQueue = new SortedJobQueue();
-	public ISortedJobQueue backupJobQueue = new SortedJobQueue();
-
+	public ISortedJobQueue primaryJobQueue = new SortedJobQueue(); // contains the primary activated jobs
+	
+	 private final Comparator<Job> comparator = new Comparator<Job>() {
+    	 public int compare(Job j1, Job j2) {
+			int cmp =  (int) (j1.getPromotionTime()-j2.getPromotionTime());
+			if(cmp==0)
+				 cmp =  (int) (j1.getPeriod()-j2.getPeriod());
+			if(cmp==0)
+				 cmp = 	(int) (j1.getDeadline()-j2.getDeadline());
+			if(cmp==0)
+			    cmp =  (int) (j1.getAbsoluteDeadline()-j2.getAbsoluteDeadline());
+			if(cmp==0)
+				cmp= (int) (j2.getRemainingTime() - j1.getRemainingTime());// due to least  laxity of job having larger execution time 
+			if (cmp==0)														// if D=9, R1=2, R2 = 5, so R2 must have higher priority having laxity
+				cmp= (int)(j1.getTaskId()-j2.getTaskId());					// larger 9-5=4 than 9-2=7.
+			return cmp;
+		}
+	  };
+	  public ISortedJobQueue backupJobQueue = new SortedJobQueue(comparator);// contains the secondary activated jobs
+	
+	  
+	  public ArrayList<Integer> fault = new ArrayList<Integer>();
 	/**
 	 * 
 	 */
@@ -82,6 +103,82 @@ public class Processor {
 	}
 	
 	
+	
+	
+
+	/**
+	 * @return the timeToNextArrival
+	 */
+	public long getTimeToNextArrival() {
+		return timeToNextArrival;
+	}
+
+	/**
+	 * @param timeToNextArrival the timeToNextArrival to set
+	 */
+	public void setTimeToNextArrival(long timeToNextArrival) {
+		this.timeToNextArrival = timeToNextArrival;
+	}
+
+	/**
+	 * @return the fault
+	 */
+	public ArrayList<Integer> getFault() {
+		return fault;
+	}
+
+	/**
+	 * @param fault the fault to set
+	 */
+	public void setFault(ArrayList<Integer> fault) {
+		this.fault = fault;
+	}
+
+	/**
+	 * @return the nextActivationTime
+	 */
+	public long getNextActivationTime() {
+		return nextActivationTime;
+	}
+
+	/**
+	 * @param nextActivationTime the nextActivationTime to set
+	 */
+	public void setNextActivationTime(long time) {
+		 ArrayList<ITask> primaryTaskset = new ArrayList<ITask>();
+		 ArrayList<ITask> backupTaskset = new ArrayList<ITask>();
+		 long minActiv= Long.MAX_VALUE,temp;
+		 long minProm= Long.MAX_VALUE;
+		 for(ITask t : taskset)
+		 {
+			 if(t.isPrimary())
+				 primaryTaskset.add(t);
+			 else
+				 backupTaskset.add(t);
+		 }
+		 for(ITask t : primaryTaskset)
+		 {
+		     temp = ((long) Math.floor(((double)time/(double)t.getPeriod()))+1)*t.getPeriod();
+			 if(temp<minActiv)
+				 minActiv=temp;
+			// System.out.println("primaryTaskset    task  "+t.getId()+"  minActiv "+minActiv+"  temp  "+temp);
+		 }
+		 for(ITask t : backupTaskset)
+		 {
+			 if (time<t.getSlack())
+				 temp = (long) (((long) Math.floor(((double)time/(double)t.getPeriod())))*t.getPeriod()+t.getSlack());
+			 else
+				 temp = (long) (((long) Math.floor(((double)time/(double)t.getPeriod()))+1)*t.getPeriod()+t.getSlack());
+			 if(temp<minProm)
+				 minProm=temp;
+		//	 System.out.println("backupTaskset   task  "+t.getId()+"   minProm  "+minProm +"  temp  "+temp);
+		 }
+		 
+		 this.nextActivationTime = Math.min(minProm, minActiv);
+	//	 System.out.println("  next Activation/promotion  Time of processor  "+this.nextActivationTime);
+				 
+		
+	}
 
 	/**
 	 * @return the endTimeCurrentJob

@@ -83,7 +83,7 @@ public class Job {
 	
 	public Job(JobId id, long activationDate2,long remainingTimeCost, long wcet, long absoluteDeadline2, long period, 
 			double freq, long promotionTime, double BCET, double ACET, double Best_CET, double average_CET
-			, Processor p, boolean primary,Processor backupProcessor) { 
+			, Processor p, boolean primary,Processor backupProcessor,Processor primaryProcessor) { 
 		jobId= id;
 		this.remainingTimeCost = remainingTimeCost;//(long)average_CET; ////////////////remainingTimeCost;//
 		remainingTime = wcet;//(long)ACET;  ////////////////wcet;//
@@ -100,7 +100,7 @@ public class Job {
 		this.p = p;
 		this.primary = primary;
 		this.backupProcessor= backupProcessor;
-
+		this.primaryProcessor = primaryProcessor;
 		
 	}
 	private long remainingTimeCost; //original wcet
@@ -132,7 +132,7 @@ public class Job {
 	private double Best_CET;
 	private double average_CET;
 	
-	 private Processor p, backupProcessor;
+	 private Processor p, backupProcessor ,primaryProcessor;
 	 private int type;   //IF TASK TYPE IS HEAVY WEIGHT OR LIGHT WEIGHT
 	 private boolean primary; // true for primary, false for secondary
 	 
@@ -177,6 +177,20 @@ public class Job {
 	 */
 	public void setBackupProcessor(Processor backupProcessor) {
 		this.backupProcessor = backupProcessor;
+	}
+	
+	
+	/**
+	 * @return the primaryProcessor
+	 */
+	public Processor getPrimaryProcessor() {
+		return primaryProcessor;
+	}
+	/**
+	 * @param primaryProcessor the primaryProcessor to set
+	 */
+	public void setPrimaryProcessor(Processor primaryProcessor) {
+		this.primaryProcessor = primaryProcessor;
 	}
 	/**
 	 * @return the faulty
@@ -248,7 +262,10 @@ public class Job {
 	 private ArrayList<Processor> proc_list = new ArrayList<Processor>();
 		
 	 /**
-		 * all start times of slots when job preempted
+		 * all start times of slots when job 
+
+
+
 		 */
 		PriorityQueue<Long> startTimes = new PriorityQueue<Long>();
 		/**
@@ -501,7 +518,7 @@ public class Job {
 	public Job cloneJob_MWFD_RMS_EEPS(){
 		//	return  new Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline, isPreemptive,type);
 	    	return new  Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline,
-	    			period, frequency, (long)promotionTime,BCET,ACET,Best_CET, average_CET,p,primary, backupProcessor);
+	    			period, frequency, (long)promotionTime,BCET,ACET,Best_CET, average_CET,p,primary, backupProcessor,  primaryProcessor);
 
 		}
 	

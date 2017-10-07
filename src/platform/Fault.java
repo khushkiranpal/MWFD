@@ -62,7 +62,7 @@ public class Fault {
 		//	System.out.println("  sample   "+ i);
 		
 		}
-	//	System.out.println("count  "+count);
+		System.out.println("count  "+count);
 		
 	//	double sample = poisson.sample();
 		

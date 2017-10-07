@@ -45,6 +45,12 @@ public class SortedJobQueue implements ISortedJobQueue {
 		this.job = new TreeSet<Job>(comparator);  // CREATES A TREESET OR SORTED QUEUE BASED ON COMPARATOR DEFINED ABOVE 
 	}
    
+	 /**
+		 *   CTOR CREATING  QUEUE BASED ON COMPARATOR
+		 */
+		public SortedJobQueue(Comparator<Job> compara){
+			this.job = new TreeSet<Job>(compara);  // CREATES A TREESET OR SORTED QUEUE BASED ON COMPARATOR DEFINED ABOVE 
+		}
 	/**
 	 *   RETURNS JOB AT THE FRONT AND DELETE IT
 	 */

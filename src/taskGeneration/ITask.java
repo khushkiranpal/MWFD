@@ -174,6 +174,16 @@ public void setDeadline(long deadline);
 		 * 
 		 * @return clones task
 		 */
+		/**
+		 * @return the primaryProcessor
+		 */
+		public Processor getPrimaryProcessor() ;
+
+		/**
+		 * @param primaryProcessor the primaryProcessor to set
+		 */
+		public void setPrimaryProcessor(Processor primaryProcessor);
+		
 		public ITask cloneTask();
 		 public ITask cloneTask_MWFD_RMS_EEPS();
 		

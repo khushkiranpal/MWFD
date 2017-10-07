@@ -43,11 +43,11 @@ public  class Task implements ITask {
 	private long finishTime=1;   //finishTime for mpn-EDf eq 4
 	// ENERGY PARAMETERS 
 	private double energy_consumed ;
-	private double frequency=1;
+	private double frequency;
 	private double voltage;
 	
 	//PROCESSOR
-		private Processor p, backupProcessor;
+		private Processor p, backupProcessor, primaryProcessor;  //to know primaryProcessor in case of backup task
 	    private boolean primary;  // true for primary, false for secondary
 
 	
@@ -86,7 +86,7 @@ public  class Task implements ITask {
 	}
 
 	// FOR rmsMWFD_RMS_EEPS Task(arrival,id, wcet,period, deadline,  priority,ACET,BCET );
-		public Task(long arrival, long id,long wcet, long period,long deadline, int priority, double ACET, 
+		public Task(long arrival, long id,long wcet, long period,long deadline, int priority,double Slack,  double ACET, 
 				double BCET	, Processor p, boolean primary,Processor backupProcessor) {
 			
 			this.C = wcet;
@@ -102,6 +102,7 @@ public  class Task implements ITask {
 			//this.id = ++count;
 			this.ACET = ACET;
 			this.BCET = BCET;
+			this.Slack = Slack;
 			
 		}
 	public Task(long arrival,long id, long wcet, long period,long deadline, int priority) {
@@ -165,6 +166,20 @@ public void setP(Processor p) {
 }
 
 
+
+	/**
+ * @return the primaryProcessor
+ */
+public Processor getPrimaryProcessor() {
+	return primaryProcessor;
+}
+
+/**
+ * @param primaryProcessor the primaryProcessor to set
+ */
+public void setPrimaryProcessor(Processor primaryProcessor) {
+	this.primaryProcessor = primaryProcessor;
+}
 
 	/**
  * @return the backupProcessor
@@ -354,7 +369,7 @@ public long getWCET_orginal() {
     	}
     
         public ITask cloneTask_MWFD_RMS_EEPS() {
-    		return new Task(arrival,id, WCET_orginal,period, deadline,  priority,ACET,BCET,p,primary, backupProcessor );
+    		return new Task(arrival,id, WCET_orginal,period, deadline,  priority,Slack,ACET,BCET,p,primary, backupProcessor );
     	}
         
 	private final PriorityQueue<Job> activeJobs = new PriorityQueue<Job>(2,
@@ -422,7 +437,7 @@ public long getWCET_orginal() {
         JobId jobId = new JobId(this.getId(),nextJobId++);
         //       System.out.println("in task     "+"job id "+jobId.getJobId()+"  task id  " + jobId.getTaskId());
         	Job job = new  Job(jobId, time, WCET_orginal, wcet, time + deadline, period, frequency, (long)(Slack+ time), 
-        			BCET, ACET,Best_CET,average_CET, p,primary, backupProcessor);
+        			BCET, ACET,Best_CET,average_CET, p,primary, backupProcessor,primaryProcessor);
         		//getActiveJobs().add(job);
         		//return job;
         		return job;
