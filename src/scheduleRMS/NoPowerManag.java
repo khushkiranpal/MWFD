@@ -25,7 +25,7 @@ import taskGeneration.SystemMetric;
 
 public class NoPowerManag {
 	
-	public  double[] schedule(ArrayList<ITask> taskset, ArrayList<Integer> fault ) throws IOException
+	public  double[] schedule(ArrayList<ITask> taskset, long hyperP) throws IOException
 	{
 
 	    double[] result = new double[5];
@@ -75,7 +75,7 @@ public class NoPowerManag {
 	    	}
 			*/
 			
-			hyper = 1000000;//0000;   ////////////////hyper////////////
+			hyper = 100000;//0000;   ////////////////hyper////////////
 			
 			// ACTIVATE ALL TASKS AT TIME 0 INITIALLY IN QUEUE  
 					
@@ -250,7 +250,7 @@ public class NoPowerManag {
 	    		 System.out.println("task  "+j.getTaskId()+"  job  "+j.getJobId()+"   period   "+j.getPeriod()+"   prio   " +j.getPriority()
 	    		 +"  start time  "+j.getActivationDate());
 	    	 }*/
-	    System.out.println("end NPM active time  "+activeTime);
+	//    System.out.println("end NPM active time  "+activeTime);
 	    primaryEnergy = energyConsumed.energyActive(activeTime, 1)+energyConsumed.energy_IDLE(hyper-activeTime);
 		result[0]= energyConsumed.energyActive(activeTime, 1);
 		result[1] =energyConsumed.energy_IDLE(hyper-activeTime);

@@ -2,16 +2,14 @@ package TEST;
 
 import java.io.IOException;
 
-import platform.Processor;
-import scheduleRMS.ScheduleRMS_EASS;
 import scheduleRMS.ScheduleRMS_EASS_MWFD;
 
 public class test {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		
-		
+		/*ScheduleRMS_EASS test = new ScheduleRMS_EASS();
+		test.schedule();*/
 	
 		ScheduleRMS_EASS_MWFD schedul = new ScheduleRMS_EASS_MWFD();
 		schedul.schedule();
@@ -35,13 +33,13 @@ public class test {
 		}
 		System.out.println(b1);*/
 		
-		/*ArrayList<Integer> fault = new ArrayList<Integer>();
+	/*	ArrayList<Integer> fault = new ArrayList<Integer>();
 		Fault f = new Fault();
 	//	fault = f.lamda_0(10000000);
-		fault = f.lamda_F(1000000, 0.42, 0.5,1 );
-		for (int i=0; i<fault.size();i++)
-			System.out.println("f  "+ fault.get(i));
-		
+		fault = f.lamda_F(100000, 0.5, 0.7,2 );
+		for (int i=0; i<2;i++)
+			System.out.println("i  "+i+"  f  "+ fault.get(i)+" size "+fault.size());
+	*/	/*
 		for(int time =0;time<=1000000 && fault.size()>0;time++)
 		{
 		
@@ -53,7 +51,7 @@ public class test {
 			
 			}
 		}*/
-		ScheduleRMS_EASS test = new ScheduleRMS_EASS();
+	//	ScheduleRMS_EASS test = new ScheduleRMS_EASS();
 	//	ScheduleRMS test = new ScheduleRMS();
 	//	test.schedule();
     /*	ParameterSetting ps = new ParameterSetting();

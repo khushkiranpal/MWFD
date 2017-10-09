@@ -61,8 +61,8 @@ public class Job {
 	public Job(JobId id, long activationDate2,long remainingTimeCost, long wcet, long absoluteDeadline2, long period, 
 			double freq, long promotionTime, double BCET, double ACET, double Best_CET, double average_CET ) { 
 		jobId= id;
-		this.remainingTimeCost = remainingTimeCost;//(long)average_CET; ////////////////remainingTimeCost;//
-		remainingTime = wcet;//(long)ACET;  ////////////////wcet;//
+		this.remainingTimeCost = (long)average_CET; ////////////////remainingTimeCost;//
+		remainingTime = (long)ACET;  ////////////////wcet;//
 		this.deadline= absoluteDeadline2;
 		this.activationDate = activationDate2;
 		absoluteDeadline = absoluteDeadline2;

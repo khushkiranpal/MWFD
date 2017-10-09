@@ -31,7 +31,7 @@ import taskGeneration.Job;
 import taskGeneration.SystemMetric;
 
 public class ScheduleRMS_EASS {
-		 public static final   double  CRITICAL_TIME=  1.5;///1500;  //1.5;///
+		 public static final   double  CRITICAL_TIME=  1500;  //1.5;///
 		 public static final   double  CRITICAL_freq= 0.50;//0.42;   //
 	private double freq=1;
 	
@@ -44,16 +44,16 @@ public class ScheduleRMS_EASS {
 	/**
 	 * @throws IOException
 	 */
-	public void schedule() throws IOException
+	public void schedule(String IP_filename, long hyperP, int d) throws IOException
 	{
-	String inputfilename= "testhaque";
+	String inputfilename= IP_filename;
     FileTaskReaderTxt reader = new FileTaskReaderTxt("D:/CODING/TASKSETS/uunifast/"+inputfilename+".txt"); // read taskset from file
     DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm");
     Calendar cal = Calendar.getInstance();
     String date = dateFormat.format(cal.getTime());
-  String filename= "D:/CODING/TEST/RMS/primary"+"_"+inputfilename+"_"+date+".txt";
-    String filename1= "D:/CODING/TEST/RMS/spare"+"_"+inputfilename+"_"+date+".txt";
-    String filename2= "D:/CODING/TEST/RMS/energy"+"_"+inputfilename+"_"+date+".txt";
+  String filename= "D:/CODING/TEST/EESP/primary"+"_"+inputfilename+"_"+date+".txt";
+    String filename1= "D:/CODING/TEST/EESP/spare"+"_"+inputfilename+"_"+date+".txt";
+    String filename2= "D:/CODING/TEST/EESP/energyEASS"+"_"+inputfilename+"_"+date+".txt";
     
   //  Writer writer = new FileWriter(filename);
     // Writer writer1 = new FileWriter(filename1);
@@ -74,9 +74,10 @@ public class ScheduleRMS_EASS {
     IdleSlot slot = new IdleSlot(); // idle slot
     List <IdleSlot> slots = new ArrayList<IdleSlot>();
     int total_no_tasksets=1;
-     writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ P_ACTIVE P_IDLE P_SLEEP S_ACTIVE S_IDLE S_SLEEP PRIMARY_ENERGY SPARE_ENERGY NPM\n");
- 
-    SysClockFreq frequency = new SysClockFreq();
+ //    writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ P_ACTIVE P_IDLE P_SLEEP S_ACTIVE S_IDLE S_SLEEP PRIMARY_ENERGY SPARE_ENERGY NPM TOTAL(S+P) \n");
+    writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ PRIMARY_ENERGY SPARE_ENERGY NPM TOTAL(S+P) \n");
+    
+   SysClockFreq frequency = new SysClockFreq();
     
     while ((set = reader.nextTaskset()) != null)
     {
@@ -136,7 +137,7 @@ public class ScheduleRMS_EASS {
 	    	System.out.println(" hyper  "+hyper);  
 
 	       // if(hyper>100000000)
-	        	hyper = 30;
+	    	hyper = hyperP;
 		
 			
     	ParameterSetting ps = new ParameterSetting();
@@ -159,7 +160,7 @@ public class ScheduleRMS_EASS {
 	    	System.out.println("in tasksetcopy id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+"  acet  "+t.getACET());
 	    	
 	    	}*/    	
-		 // npmResult = npm.schedule(taskset_copy, fault);
+		 npmResult = npm.schedule(taskset_copy, hyperP);
 	//	ps.setParameterDouble(taskset);	  
     	double set_fq = frequency.SysClockF(taskset), fq = 0;
     
@@ -207,7 +208,7 @@ public class ScheduleRMS_EASS {
     	
     	
     	
-    	fault = f.lamda_F(hyper, CRITICAL_freq, fq, 0);        //////////////FAULT////////////
+    	fault = f.lamda_F(hyper, CRITICAL_freq, fq, d);        //////////////FAULT////////////
 		
 	//	fault = f.lamda_0(10000000);
     	
@@ -734,9 +735,9 @@ public class ScheduleRMS_EASS {
 		    	if (deadlineMissed)
 		    		break;
     	}
-    	System.out.println(" spare active time "+spare.getActiveTime()+"  sleep "+spare.getSleepTime()+"  idle  "+spare.getIdleTime());
+    /*	System.out.println(" spare active time "+spare.getActiveTime()+"  sleep "+spare.getSleepTime()+"  idle  "+spare.getIdleTime());
     	System.out.println("primary  active time "+primary.getActiveTime()+"  sleep "+primary.getSleepTime()+"  idle  "+primary.getIdleTime());
-    	/*Iterator<Job> itr1 = spareQueue.iterator();
+   */ 	/*Iterator<Job> itr1 = spareQueue.iterator();
     	 while (itr1.hasNext())
     	 {
     		 
@@ -749,22 +750,26 @@ public class ScheduleRMS_EASS {
     	primaryEnergy = energyConsumed.energyActive(primary.activeTime, fq)+energyConsumed.energy_IDLE(primary.idleTime) +energyConsumed.energySLEEP(primary.sleepTime) ;
     	spareEnergy = energyConsumed.energyActive(spare.getActiveTime(), 1)+energyConsumed.energy_IDLE(spare.idleTime) +energyConsumed.energySLEEP(spare.sleepTime) ;
     	
-    	System.out.println("primary  active energy"+energyConsumed.energyActive(primary.activeTime, fq)+"  idle  "+energyConsumed.energy_IDLE(primary.idleTime)
+    /*	System.out.println("primary  active energy"+energyConsumed.energyActive(primary.activeTime, fq)+"  idle  "+energyConsumed.energy_IDLE(primary.idleTime)
     	+" sleep  "+energyConsumed.energySLEEP(primary.sleepTime));
     	System.out.println("spare  active energy "+energyConsumed.energyActive(spare.getActiveTime(), 1)+"  idle  "+energyConsumed.energy_IDLE(spare.idleTime)
     	+" sleep  "+energyConsumed.energySLEEP(spare.sleepTime));
     
     	
     	System.out.println("primaryEnergy   "+primaryEnergy +" spareEnergy  "+spareEnergy);
-    
-    	 writer2.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
+    */
+    	writer2.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
+	    	    +" "+ Double.valueOf(twoDecimals.format(fq)) +" "+Double.valueOf(twoDecimals.format(primaryEnergy))+
+	    	    " "+Double.valueOf(twoDecimals.format(spareEnergy))+" "+Double.valueOf(twoDecimals.format(npmResult[2] ))
+	    	    + " "+ Double.valueOf(twoDecimals.format(spareEnergy+primaryEnergy))+"\n");
+
+    	
+    	
+    	/* writer2.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
     	    	    +" "+ Double.valueOf(twoDecimals.format(fq))+" "+(double)primary.activeTime +" "+(double)primary.idleTime +" "+(double)primary.sleepTime 
     	    	    +" "+(double)spare.activeTime +" "+(double)spare.idleTime +" "+(double)spare.sleepTime +" "+Double.valueOf(twoDecimals.format(primaryEnergy))+
-    	    	    " "+Double.valueOf(twoDecimals.format(spareEnergy))+" "+npmResult[2] +"\n");
-    	/* writer2.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
-    	    +" "+ Double.valueOf(twoDecimals.format(fq))+" "+(double)primary.activeTime/1000+" "+(double)primary.idleTime/1000+" "+(double)primary.sleepTime/1000
-    	    +" "+(double)spare.activeTime/1000+" "+(double)spare.idleTime/1000+" "+(double)spare.sleepTime/1000+" "+Double.valueOf(twoDecimals.format(primaryEnergy))+
-    	    " "+Double.valueOf(twoDecimals.format(spareEnergy))+" "+npmResult[2]/1000+"\n");*/
+    	    	    " "+Double.valueOf(twoDecimals.format(spareEnergy))+" "+npmResult[2]  + " "+ Double.valueOf(twoDecimals.format(spareEnergy+primaryEnergy))+"\n");
+    	*/
     System.out.println("   tasksets  "+total_no_tasksets);
     
     }
@@ -772,7 +777,7 @@ public class ScheduleRMS_EASS {
      // writer.close();
    //   writer1.close();
      writer2.close();
-    System.out.println("success");
+    System.out.println("success ScheduleRMS_EASS");
 	}
 	
 	public static void prioritize(ArrayList<ITask> taskset)

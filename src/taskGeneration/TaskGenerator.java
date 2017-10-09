@@ -26,7 +26,7 @@ public  class TaskGenerator implements ITaskGenerator {
      */
     public ITask generate(double utilization, int deadlineModel, long MAX_PERIOD) {
 		long  start = 0;
-		long period = nextInt(1000, (int) MAX_PERIOD);
+		long period = nextInt(10000, (int) MAX_PERIOD);
 		long wcet = Math.max(1, (long) (period * utilization));
 		long deadline = period; // implicit deadline
 		if (deadlineModel < 0) { // constrained deadline

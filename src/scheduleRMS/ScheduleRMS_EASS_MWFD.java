@@ -33,7 +33,9 @@ import taskGeneration.SystemMetric;
 public class ScheduleRMS_EASS_MWFD {
 		 public static final   double  CRITICAL_TIME=  1500;  //1.5;///
 		 public static final   double  CRITICAL_freq= 0.50;//0.42;   //
-	private double freq=1;
+		 public static final  long hyperperiod = 30;
+		 public static final int d = 0;
+		 private double freq=1;
 	
 	/**
 	 * @throws IOException
@@ -46,17 +48,17 @@ public class ScheduleRMS_EASS_MWFD {
 	 */
 	public void schedule() throws IOException
 	{
-	String inputfilename= "test";
+	String inputfilename= "testhaque";
     FileTaskReaderTxt reader = new FileTaskReaderTxt("D:/CODING/TASKSETS/uunifast/"+inputfilename+".txt"); // read taskset from file
     DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm");
     Calendar cal = Calendar.getInstance();
     String date = dateFormat.format(cal.getTime());
-  String filename= "D:/CODING/TEST/RMS/allocation"+"_"+inputfilename+"_"+date+".txt";
-    String filename1= "D:/CODING/TEST/RMS/processorwise"+"_"+inputfilename+"_"+date+".txt";
-    String filename2= "D:/CODING/TEST/RMS/energy"+"_"+inputfilename+"_"+date+".txt";
+  String filename= "D:/CODING/TEST/EESP/allocation"+"_"+inputfilename+"_"+date+".txt";
+    String filename1= "D:/CODING/TEST/EESP/processorwise"+"_"+inputfilename+"_"+date+".txt";
+    String filename2= "D:/CODING/TEST/EESP/energyMWFD"+"_"+inputfilename+"_"+date+".txt";
     
     Writer writer = new FileWriter(filename);
-     Writer writer1 = new FileWriter(filename1);
+    Writer writer1 = new FileWriter(filename1);
     Writer writer2 = new FileWriter(filename2);
     
     DecimalFormat twoDecimals = new DecimalFormat("#.##");  // upto 1 decimal points
@@ -74,9 +76,12 @@ public class ScheduleRMS_EASS_MWFD {
     IdleSlot slot = new IdleSlot(); // idle slot
     List <IdleSlot> slots = new ArrayList<IdleSlot>();
     int total_no_tasksets=1;
-    writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ TOTAL_ENERGY NPM\n");
+    writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ TOTAL_ENERGY \n");
  
     SysClockFreq frequency = new SysClockFreq();
+    	/*	///////////////////////////////////////ScheduleRMS_EASS//////////
+    		ScheduleRMS_EASS test = new ScheduleRMS_EASS();
+    			test.schedule(inputfilename,hyperperiod, d);*/
     
     while ((set = reader.nextTaskset()) != null)
     {
@@ -134,7 +139,7 @@ public class ScheduleRMS_EASS_MWFD {
 	    	System.out.println(" hyper  "+hyper);  
 
 	       // if(hyper>100000000)
-	        	hyper = 10000;
+	        	hyper = hyperperiod;
 		
 			
     	ParameterSetting ps = new ParameterSetting();
@@ -145,19 +150,21 @@ public class ScheduleRMS_EASS_MWFD {
     	
     	
 		// NPM RESULT////////////////////
-		  double[] npmResult = new double[5];
+	/*	  double[] npmResult = new double[5];
 		  NoPowerManag npm = new NoPowerManag();
 		  ArrayList<ITask> taskset_copy = new ArrayList<ITask>();
 			for (int i = 0 ; i<taskset.size();i++){
 	    	    taskset_copy.add(taskset.get(i).cloneTask_RMS_double()) ;
 	    	   
 	    	}
-		/*	for(ITask t : taskset_copy)
+			for(ITask t : taskset_copy)
 	    	{
 	    	System.out.println("in tasksetcopy id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+"  acet  "+t.getACET());
 	    	
-	    	}*/    	
-		 // npmResult = npm.schedule(taskset_copy, fault);
+	    	}    	
+		  npmResult = npm.schedule(taskset_copy);*/
+    	
+    	
 	//	ps.setParameterDouble(taskset);	  
     	double set_fq = frequency.SysClockF(taskset), fq = 0;
     
@@ -167,7 +174,7 @@ public class ScheduleRMS_EASS_MWFD {
     	ps.set_freq(taskset,Double.valueOf(twoDecimals.format(fq)));
     	
     	boolean schedulability = schedule.worstCaseResp_TDA_RMS(taskset);
-    	System.out.println("on  one processor   "+schedulability+"  at fq "+fq);
+  //  	System.out.println("on  one processor   "+schedulability+"  at fq "+fq);
    
     	while(schedulability==false)
        {
@@ -175,7 +182,7 @@ public class ScheduleRMS_EASS_MWFD {
     	
          fq=fq+0.01;
 
-  	   System.out.println("while  frequency   " +fq);
+  //	   System.out.println("while  frequency   " +fq);
      	ps.set_freq(taskset,Double.valueOf(twoDecimals.format(fq)));
         
     	   schedulability = schedule.worstCaseResp_TDA_RMS(taskset);   
@@ -183,7 +190,7 @@ public class ScheduleRMS_EASS_MWFD {
         
     	   if (fq>1)
     	   {
-    		   System.out.println("breaking   "+fq);
+    	//	   System.out.println("breaking   "+fq);
     		   break;
     	  
     	   }
@@ -255,7 +262,7 @@ public class ScheduleRMS_EASS_MWFD {
     	
 	//ALLOCATION OF PRIMARIES
     	
-     		writer.write("\nPRIMARY ");
+     	//	writer.write("\nPRIMARY ");
     	
     	for(ITask t : taskset)
     	{
@@ -279,14 +286,14 @@ public class ScheduleRMS_EASS_MWFD {
     		minP.setWorkload(Double.valueOf(twoDecimals.format(minP.getWorkload()+u)));
     		t.setP(minP);
     		t.setPrimaryProcessor(minP);
-    		writer.write("\n"+minP.getId()+" "+t.getId()+" "+u+" "+t.getWcet()+" "+t.getPeriod());
+    	//	writer.write("\n"+minP.getId()+" "+t.getId()+" "+u+" "+t.getWcet()+" "+t.getPeriod());
     		
     	}
     
     	
     	
     	//ALLOCATION OF BACKUPS
-    	writer.write("\nBACKUPS ");
+    //	writer.write("\nBACKUPS ");
     	// SORT IN DECREASING ORDER OF UTILIZATION FOR MFWD wcet_original
 		
     			Comparator<ITask> c1 = new Comparator<ITask>() {
@@ -336,8 +343,8 @@ public class ScheduleRMS_EASS_MWFD {
     		minP.taskset.add(backup_task);
     		minP.setWorkload(Double.valueOf(twoDecimals.format(minP.getWorkload()+u)));
     		backup_task.setP(minP);
-    		//writer.write("\n"+t.getId()+" "+u+" "+t.getWcet()+" "+t.getPeriod());
-     		writer.write("\n"+minP.getId()+" "+t.getId()+" "+u+" "+t.getWcet()+" "+t.getPeriod());
+    		
+  //   		writer.write("\n"+minP.getId()+" "+t.getId()+" "+u+" "+t.getWcet()+" "+t.getPeriod());
      	   
     	}
     	
@@ -356,7 +363,7 @@ public class ScheduleRMS_EASS_MWFD {
         	}*/
     		
     		schedulability = schedule.worstCaseResp_TDA_RMS(pMin.taskset);
-    		System.out.println("proc   "+pMin.getId()+"   schedulability   "+schedulability);
+    	//	System.out.println("proc   "+pMin.getId()+"   schedulability   "+schedulability);
     		if(schedulability==false)
     		{
     			unschedulable= true;
@@ -367,12 +374,12 @@ public class ScheduleRMS_EASS_MWFD {
     		else 
     			unschedulable=false;
 		}
-    	System.out.println("fq  "+fq+"   unschedulable  "+unschedulable);
+   // 	System.out.println("fq  "+fq+"   unschedulable  "+unschedulable);
 
 		for(Processor pMin : freeProcList)
 		{
     		
-			System.out.println("processor   "+pMin.getId()+"   size  "+pMin.taskset.size()+"  w  "+pMin.getWorkload());
+	//		System.out.println("processor   "+pMin.getId()+"   size  "+pMin.taskset.size()+"  w  "+pMin.getWorkload());
 		}   
     	}while( unschedulable == true);
     	
@@ -382,13 +389,13 @@ public class ScheduleRMS_EASS_MWFD {
 		
 	for(Processor p : freeProcList)
 	{
-		System.out.println("FAULT  P "+p.getId());
-		fault = f.lamda_F(hyper, CRITICAL_freq, fq, 3);
+//		System.out.println("FAULT  P "+p.getId());
+		fault = f.lamda_F(hyper, CRITICAL_freq, fq, d);
 		p.setFault(fault);
-		for(int fa: fault)
+	/*	for(int fa: fault)
 		{
 		//	System.out.println(" p "+p.getId()+"   fault  "+ fa);
-		}
+		}*/
 		
 		
 	}
@@ -400,18 +407,19 @@ public class ScheduleRMS_EASS_MWFD {
 		for(ITask t : pMin.taskset)
 			
     	{
-			writer.write("\n"+pMin.getId()+" "+t.getId()+" "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
+			writer.write(pMin.getId()+" "+t.getId()+" "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
 			+" "+t.getWCET_orginal()+" "+t.getPeriod()+" "+
-			" "+t.isPrimary()+	" "+t.getBackupProcessor().getId()+" "+t.getPrimaryProcessor().getId());
+			" "+t.isPrimary()+	" "+t.getBackupProcessor().getId()+" "+t.getPrimaryProcessor().getId()+"\n");
 			
 		/*	System.out.println("task   "+t.getId()+"  u  "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
 			+"   primary  "+t.isPrimary()+"  Proc   "+t.getP().getId()+	"   backup p  "+t.getBackupProcessor().getId()+
 			"   primary  "+t.getPrimaryProcessor().getId());
    */
     	}
+		writer.write("\n"+"FAULT  \t\t");
 		for(int fa: pMin.getFault())
 		{
-			writer.write("\nFAULT  "+fa+"\t");
+			writer.write(fa+"\t\t");
 		}
 		writer.write("\nU "+Double.valueOf(twoDecimals.format((SystemMetric.utilisation(pMin.taskset)))));
 	}
@@ -498,9 +506,7 @@ public class ScheduleRMS_EASS_MWFD {
 		while(itr.hasNext())
 			System.out.println("promotionTimes   "+itr.next());
 	  	*/
-          // writer.write("\nTASK ID  JOBID PR/BK FREQ ACET WCET DEADLINE  isPreempted STARTTIME ENDTIME  \n");
-          // writer1.write("\nP_ID TASKID  JOBID PR/BK FREQ WCET DEADLINE  isPreempted STARTTIME ENDTIME  \n");
-           writer1.write("\nP_ID TASKID  JOBID PR/BK FREQ WCET DEADLINE  isPreempted STARTTIME ENDTIME FAULTY idleS idleE idleLen \n");
+            writer1.write("\nP_ID TASKID  JOBID PR/BK FREQ WCET DEADLINE  isPreempted STARTTIME ENDTIME FAULTY idleS idleE idleLen \n");
         nextActivationTime=  activationTimes.pollFirst();
           // System.out.println("nextActivationTime  "+nextActivationTime);
     	 timeToNextPromotion = promotionTimes.get(0);
@@ -959,29 +965,8 @@ public class ScheduleRMS_EASS_MWFD {
             	
     		energyTotal+= proc.getEnergy_consumed();
     	}
-  /*  	System.out.println(" spare active time "+spare.getActiveTime()+"  sleep "+spare.getSleepTime()+"  idle  "+spare.getIdleTime());
-    	System.out.println("primary  active time "+primary.getActiveTime()+"  sleep "+primary.getSleepTime()+"  idle  "+primary.getIdleTime());
-    */	/*Iterator<Job> itr1 = spareQueue.iterator();
-    	 while (itr1.hasNext())
-    	 {
-    		 
-    		 j = itr1.next();
-    		 System.out.println("task  "+j.getTaskId()+"  job  "+j.getJobId()+"   period   "+j.getPeriod()+"   prio   " +j.getPriority()
-    		 +"  start time  "+j.getActivationDate()+"  promotion "+j.getPromotionTime());
-    	 }*/
+  
     
-    	double primaryEnergy, spareEnergy;
-    	primaryEnergy = energyConsumed.energyActive(primary.activeTime, fq)+energyConsumed.energy_IDLE(primary.idleTime) +energyConsumed.energySLEEP(primary.sleepTime) ;
-    	spareEnergy = energyConsumed.energyActive(spare.getActiveTime(), 1)+energyConsumed.energy_IDLE(spare.idleTime) +energyConsumed.energySLEEP(spare.sleepTime) ;
-  /*  	
-    	System.out.println("primary  active energy"+energyConsumed.energyActive(primary.activeTime, fq)+"  idle  "+energyConsumed.energy_IDLE(primary.idleTime)
-    	+" sleep  "+energyConsumed.energySLEEP(primary.sleepTime));
-    	System.out.println("spare  active energy "+energyConsumed.energyActive(spare.getActiveTime(), 1)+"  idle  "+energyConsumed.energy_IDLE(spare.idleTime)
-    	+" sleep  "+energyConsumed.energySLEEP(spare.sleepTime));
-    
-    	
-    	System.out.println("primaryEnergy   "+primaryEnergy +" spareEnergy  "+spareEnergy);
-    */
     	 writer2.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
     	    	    +" "+ Double.valueOf(twoDecimals.format(fq))+" " +Double.valueOf(twoDecimals.format(energyTotal))+"\n");
         System.out.println("   tasksets  "+total_no_tasksets+" energy  "+energyTotal);
@@ -991,7 +976,7 @@ public class ScheduleRMS_EASS_MWFD {
    writer.close();
   writer1.close();
     writer2.close();
-    System.out.println("success");
+    System.out.println("success ScheduleRMS_EASS_MWFD");
 	}
 	
 	public static void prioritize(ArrayList<ITask> taskset)
