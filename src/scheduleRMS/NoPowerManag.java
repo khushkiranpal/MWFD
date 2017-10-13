@@ -75,8 +75,8 @@ public class NoPowerManag {
 	    	}
 			*/
 			
-			hyper = 100000;//0000;   ////////////////hyper////////////
-			
+		//	hyper = 100000;//0000;   ////////////////hyper////////////
+			hyper= hyperP;
 			// ACTIVATE ALL TASKS AT TIME 0 INITIALLY IN QUEUE  
 					
 			
@@ -108,7 +108,7 @@ public class NoPowerManag {
 	//        System.out.println("  total_no_tasks   "+total_no_tasks);
 	        while(time<hyper)
 	    	{
-	   // 	System.out.println("hyper  "+hyper+"  time  "+time+"  busy "+busy);
+	     //   	System.out.println("hyper  "+hyper+"  time  "+time+"  busy "+busy);
 	    		
 	    		if( time== nextActivationTime) // AFTER 0 TIME JOB ACTIVAIONS
 				{
@@ -250,7 +250,7 @@ public class NoPowerManag {
 	    		 System.out.println("task  "+j.getTaskId()+"  job  "+j.getJobId()+"   period   "+j.getPeriod()+"   prio   " +j.getPriority()
 	    		 +"  start time  "+j.getActivationDate());
 	    	 }*/
-	//    System.out.println("end NPM active time  "+activeTime);
+	    System.out.println("end NPM active time  "+activeTime);
 	    primaryEnergy = energyConsumed.energyActive(activeTime, 1)+energyConsumed.energy_IDLE(hyper-activeTime);
 		result[0]= energyConsumed.energyActive(activeTime, 1);
 		result[1] =energyConsumed.energy_IDLE(hyper-activeTime);

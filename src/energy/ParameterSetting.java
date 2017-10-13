@@ -90,7 +90,7 @@ public class ParameterSetting {
 		for(ITask t:taskset)
       {
 	//	System.out.println("task i "+t.getId()+" wcet  "+t.getWcet());
-            double w=t.getWcet(),w1=w-1;
+            double w=t.getWCET_orginal(),w1=w-1;
             while(w != w1)
             {
                 w1 = w;

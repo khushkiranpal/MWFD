@@ -2,15 +2,16 @@ package TEST;
 
 import java.io.IOException;
 
+import scheduleRMS.ScheduleRMS_EASS;
 import scheduleRMS.ScheduleRMS_EASS_MWFD;
 
 public class test {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		/*ScheduleRMS_EASS test = new ScheduleRMS_EASS();
-		test.schedule();*/
-	
+		/*ScheduleRMS_EASS test = new ScheduleRMS_EASS(); 
+		test.schedule("testhaque",30,8); // void schedule(String IP_filename, long hyperP, int d) 
+	*/
 		ScheduleRMS_EASS_MWFD schedul = new ScheduleRMS_EASS_MWFD();
 		schedul.schedule();
 	/*	DecimalFormat twoDecimals = new DecimalFormat("#.##");  // upto 2 decimal points

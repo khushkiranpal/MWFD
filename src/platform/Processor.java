@@ -506,6 +506,7 @@ public class Processor {
 	 */
 	public void setActiveEnergy(double activeEnergy) {
 		this.activeEnergy += activeEnergy;
+	//	System.out.println(" id "+ this.getId()+" active   "+activeEnergy );
 	}
 
 	/**

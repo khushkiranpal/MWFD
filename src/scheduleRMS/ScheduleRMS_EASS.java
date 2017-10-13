@@ -55,9 +55,9 @@ public class ScheduleRMS_EASS {
     String filename1= "D:/CODING/TEST/EESP/spare"+"_"+inputfilename+"_"+date+".txt";
     String filename2= "D:/CODING/TEST/EESP/energyEASS"+"_"+inputfilename+"_"+date+".txt";
     
-  //  Writer writer = new FileWriter(filename);
-    // Writer writer1 = new FileWriter(filename1);
-    Writer writer2 = new FileWriter(filename2);
+ // Writer writer_primary = new FileWriter(filename);
+ //   Writer writer_spare = new FileWriter(filename1);
+    Writer writer_energy = new FileWriter(filename2);
     
     DecimalFormat twoDecimals = new DecimalFormat("#.##");  // upto 1 decimal points
 
@@ -75,7 +75,7 @@ public class ScheduleRMS_EASS {
     List <IdleSlot> slots = new ArrayList<IdleSlot>();
     int total_no_tasksets=1;
  //    writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ P_ACTIVE P_IDLE P_SLEEP S_ACTIVE S_IDLE S_SLEEP PRIMARY_ENERGY SPARE_ENERGY NPM TOTAL(S+P) \n");
-    writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ PRIMARY_ENERGY SPARE_ENERGY NPM TOTAL(S+P) \n");
+    writer_energy.write("TASKSET UTILIZATION SYS_FREQ FREQ PRIMARY_ENERGY SPARE_ENERGY NPM TOTAL(S+P) \n");
     
    SysClockFreq frequency = new SysClockFreq();
     
@@ -105,23 +105,7 @@ public class ScheduleRMS_EASS {
 			
 			primary.setBusy(false);
 			primary.setProc_state(proc_state.SLEEP);
-    	/*//LIST OF FREE PROCESSORS
-			Comparator<Processor> comparator = new Comparator<Processor>() {
-		    	 public int compare(Processor p1, Processor p2) {
-					int cmp =  (int) (p1.getId()-p2.getId());
-					return cmp;
-				}
-			  };
-			
-			  PriorityQueue<Processor> freeProcList = new PriorityQueue<Processor> (comparator); //LIST OF FREE PROCESSORS
-
-    	ArrayList<Processor> no_of_proc = new ArrayList<Processor>(); //total processor list
-			for(int i = 1;i<=2;i++)  // m is number of processors
-			 {
-				 Processor p = new Processor(i,false); // i gives the processor id value , false means processor is free
-				 freeProcList.add(p);
-				 no_of_proc.add(p);
-			 }*/
+    
     	
     	ISortedQueue queue = new SortedQueuePeriod ();
     	queue.addTasks(set);
@@ -193,23 +177,27 @@ public class ScheduleRMS_EASS {
     	   
        }
     	 if (fq>1)
+    	 {
+    		 System.out.println("unfeasible  "+total_no_tasksets);
     		 continue;
-    	
+    	 }
   
     	ps.setResponseTime(taskset);    
     	ps.setPromotionTime(taskset);       //SET PROMOTION TIMES
     
-    /*	for(ITask t : taskset)
+    	/*for(ITask t : taskset)
     	{
     	System.out.println("in taskset id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+"  acet  "+t.getACET());
-    	System.out.println("slack    "+t.getSlack()+"   response  "+t.getResponseTime());
-    	}
-    	*/
+    	System.out.println("promotion    "+t.getSlack()+"   response  "+t.getResponseTime());
+    	}*/
     	
     	
+    	////////////FAULT/////////////////////////FAULT////////////
     	
     	fault = f.lamda_F(hyper, CRITICAL_freq, fq, d);        //////////////FAULT////////////
-		
+		/*fault.add(1);
+		fault.add(5);
+		fault.add(11);*/
 	//	fault = f.lamda_0(10000000);
     	
     	
@@ -287,12 +275,18 @@ public class ScheduleRMS_EASS {
 		while(itr.hasNext())
 			System.out.println("promotionTimes   "+itr.next());
 	  	*/
-             //  writer.write("\n\nSCHEDULE\nTASK ID  JOBID  ARRIVAL  ACET WCET DEADLINE  isPreempted STARTTIME ENDTIME  \n");
-              //  writer1.write("\n\nSCHEDULE\nTASK ID  JOBID  ARRIVAL Av_CET WCETor DEADLINE  isPreempted STARTTIME ENDTIME  \n");
-
+	//	 writer_primary.write("\nTASKID av_ACET BCET ACET WCET_or WCET DEADLINE\n");
+	/*	for (ITask t: taskset)
+		{
+			writer_primary.write("\n"+t.getId()+" "+t.getAverage_CET()+" "+t.getBCET()+" "+t.getACET()+" "+t.getWCET_orginal()+" " +t.getWcet()+" "+t.getDeadline());
+		}
+		
+               writer_primary.write("\nSCHEDULE\nTASKID  JOBID  ARRIVAL  ACET WCET DEADLINE  isPreempted STARTTIME ENDTIME  \n");
+               writer_spare.write("\nSCHEDULE\nTASKID  JOBID  ARRIVAL Av_CET WCETor DEADLINE  isPreempted STARTTIME ENDTIME  \n");
+*/
         nextActivationTime=  activationTimes.pollFirst();
         
-  //  System.out.println("nextActivationTime  "+nextActivationTime);
+  // System.out.println("nextActivationTime  "+nextActivationTime);
     	
     /*   Iterator<Job> itr = spareQueue.iterator();
        while(itr.hasNext())
@@ -303,16 +297,58 @@ public class ScheduleRMS_EASS {
 */
     //  int c=0;
         timeToNextPromotion = promotionTimes.get(0);
+        
+        
+        
         while(time<hyper)
     	{
     	//	if(time>21000)
         	//System.out.println("hyper  "+hyper+"  time  "+time);
     		
     		
-    		if (!spareQueue.isEmpty() && spareBusy==false  )
-    		{
+      
     	//	System.out.println("   time   "+time+"  spareBusy   "+spareBusy+ "  task  id  "+spareQueue.first().getTaskId());
     		
+    		
+        	
+        	if ( (long)time == (long)spareEndTime && (time>0) && spare.getProc_state()== ProcessorState.ACTIVE
+        			)// here because after this new spareEndTime will be reinialized
+        	{
+ 
+        //		System.out.println("time   "+time+" current[0].getTaskId()  "+current[0].getTaskId());
+        		
+        		// DELETE THE RUNNING JOB  
+ 				
+ 				if(current[0]!=null && current[0].getTaskId()== spare_current[0].getTaskId() &&
+ 						current[0].getJobId()== spare_current[0].getJobId() 
+ 						  && primary.getProc_state()==ProcessorState.ACTIVE && spareBusy == true)
+ 				{
+ 					primary.setProc_state(proc_state.IDLE);//-------------------
+ 			primaryBusy = false;  // set processor free 22/9/17
+ 					current[0].setEndTime(spareEndTime);  // set endtime of job
+	        		current[0].setCompletionSuccess(true);//-------------------
+	        	//	completedJobs.add(lastExecutedJob);
+	       	   //   System.out.println("time   "+time+"  primary   task  "+current[0].getTaskId()+ "  success of primary and spare  "+current[0].isCompletionSuccess());
+	        	//	   writer_primary.write(spareEndTime+"    spareEndTime\n");
+ 				}
+ 					     // System.out.println("time   "+time+"spare first" +spareQueue.first().getTaskId()+" completion "+spareQueue.first().isCompletionSuccess());
+        		
+ 				if( (timeToNextPromotion<=CRITICAL_TIME) && !spareQueue.first().isCompletionSuccess())
+    				spare.setProc_state(proc_state.IDLE);
+    			else
+    				spare.setProc_state(proc_state.SLEEP);
+        		
+        		spare.setBusy(false);
+    			spareBusy=false;
+    	//		primaryBusy = false;  // set processor free
+    			
+        	}
+        	
+    		if (!spareQueue.isEmpty() && spareBusy==false  )
+    		{
+    	/*	System.out.println("   time   "+time+"  spareBusy   "+spareBusy+ "  task  id  "+spareQueue.first().getTaskId()
+    				+"  wcet  "+spareQueue.first().getRomainingTimeCost());
+    	*/	
     			while (!spareQueue.isEmpty() && time >= spareQueue.first().getPromotionTime()   )
     		//	if( time >= spareQueue.first().getPromotionTime() )
     			{
@@ -330,7 +366,7 @@ public class ScheduleRMS_EASS {
     				{
     					while (spareJob.getPromotionTime()!=promotionTimes.get(0))
     					{
-    		//				System.out.println("promotionTimes.get(0)  "+promotionTimes.get(0)+"   spareJob.getPromotionTime()  "+spareJob.getPromotionTime());
+    			//			System.out.println("promotionTimes.get(0)  "+promotionTimes.get(0)+"   spareJob.getPromotionTime()  "+spareJob.getPromotionTime());
     						promotionTimes.remove(0);
     						
     					}
@@ -341,26 +377,29 @@ public class ScheduleRMS_EASS {
     				
     			//	timeToNextPromotion = promotionTimes.get(0);
     		/*	System.out.println("time  "+time  +"  spare job  "+ spareJob.getTaskId()+"  size  "+promotionTimes.size()+
-    						"  timeToNextPromotion  "+timeToNextPromotion+" "+spareJob.getPromotionTime()+"  faulty"+spareJob.isFaulty());
+    						"  timeToNextPromotion  "+timeToNextPromotion+" "+spareJob.getPromotionTime()
+    						+"  isCompletionSuccess  "+spareJob.isCompletionSuccess()+"  faulty"+spareJob.isFaulty());
     		*/		if (spareJob.isCompletionSuccess()==false || spareJob.isFaulty()==true)
     				{ 
-    				//	System.out.println("time    "+time  +"  spare job executed  "+ spareJob.getTaskId());
+    		//		System.out.println("time    "+time  +"  spare job executed  "+ spareJob.getTaskId());
     		    			
     					
     					spareBusy=true;
     					spare.setBusy(true);
+    					spareJob.setStartTime(time);
     					spare_current[0]= spareJob;/////to make it visible
     					spare.setProc_state(ProcessorState.ACTIVE);
-    			  //  writer1.write(spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
-	//    	  "\t"+spareJob.getRomainingTimeCost()+"\t"+spareJob.getAbsoluteDeadline()+"\t"+spareJob.isPreempted+"\t\t"+time+"\t");
-	          			
+    					
+    /*			    writer_spare.write(spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
+	  	  "\t"+spareJob.getRomainingTimeCost()+"\t"+spareJob.getAbsoluteDeadline()+"\t"+spareJob.isPreempted+"\t\t"+time+"\t");
+	 */         			
     	  //  			System.out.println(" time  "+time+"  spareBusy   "+spareBusy+"  promotion time "+spareJob.getPromotionTime());
     					//spare.setActiveTime(spareActiveTime++);
     				spareEndTime = (long)time + (long) spareJob.getRomainingTimeCost();//.getAverage_CET()*1000 ;////////.getRomainingTimeCost();
     				
-    		/*	System.out.println("  time "+time+"  job id "+spareJob.getJobId()+"  task id  "+spareJob.getTaskId()+
+    	/*		System.out.println("  time "+time+"  job id "+spareJob.getJobId()+"  task id  "+spareJob.getTaskId()+
     					"  job completed  "+spareJob.isCompletionSuccess()+"   spareEndTime with acet "+spareEndTime);
-    		*/	
+    	*/		
     				break;
     				}
     				else
@@ -371,66 +410,98 @@ public class ScheduleRMS_EASS {
     				
     				}
     		}
-    		
-    		if ( (long)time == (long)spareEndTime && (time>0) && spare.getProc_state()== ProcessorState.ACTIVE)
+    		else if (spareBusy)
+    		{
+    			if(!spareQueue.isEmpty() && time==spareQueue.first().getPromotionTime() && 
+    					spareJob.getPeriod()>spareQueue.first().getPeriod() && (!spareQueue.first().isCompletionSuccess()
+    					|| spareQueue.first().isFaulty()))
     			{
-    			
-    			     //  writer1.write(spareEndTime+"    spareEndTime\n");
-    //			System.out.println("time   "+time  +" spare queue   "+spareQueue.size());
-    	//		+"  task  "+spareQueue.first().getTaskId()+   					"  job  "+spareQueue.first().getJobId());
-    			 spare_current[0].setCompletionSuccess(true);
-    		//	 System.out.println("time   "+time  +" active primary job task  "+ current[0]);
- 			//	System.out.println("time    "+time+"  size  "+activeJobQ.size());
-    			
-    			 
-    			 // DELETE THE RUNNING JOB  
- 				
- 				if(current[0]!=null &&current[0].getTaskId()== spare_current[0].getTaskId() &&
- 						current[0].getJobId()== spare_current[0].getJobId() 
- 						  && primary.getProc_state()==ProcessorState.ACTIVE && spareBusy == true)
- 				{
- 					primary.setProc_state(proc_state.IDLE);//-------------------
- 					primaryBusy = false;  // set processor free
- 					current[0].setEndTime(spareEndTime);  // set endtime of job
-	        		current[0].setCompletionSuccess(true);//-------------------
-	        	//	completedJobs.add(lastExecutedJob);
-	      //  	     System.out.println("time   "+time+"  primary   task  "+current[0].getTaskId()+ "  success of primary and spare  "+current[0].isCompletionSuccess());
-	        		 //  writer.write(spareEndTime+"    spareEndTime\n");
- 				}
- 					
- 				
- 				// DELETE THE COMPLETED JOB FROM ACTIVE QUEUE
-    			 Iterator<Job> acticeItr = activeJobQ.iterator();
-    			 while(acticeItr.hasNext())
-    			 {
-    				 Job temp1;
-    				 temp1  = acticeItr.next();
-    		//		 System.out.println("primaary pending  task  "+temp1.getTaskId());
-    		    		 
-    				 if(temp1.getTaskId()== spare_current[0].getTaskId() && temp1.getJobId()== spare_current[0].getJobId())
-    				 {
-    					 temp1.setCompletionSuccess(true);
-    					 activeJobQ.remove(temp1);
-    	//				 System.out.println("time    "+time+" primaary pending task  "+temp1.getTaskId()+"  spare"+spare_current[0].getTaskId() );
-    				    break;
-    				 }
-    			 }
-    			 
-    			 
-    			 
-    			 
-    			//	timeToNextPromotion = promotionTimes.pollFirst();//spareQueue.first().getPromotionTime()- (long)time;
-    		//	System.out.println("timeToNextPromotion   "+timeToNextPromotion+" time "+time);//+"  spareQueue.first().getPromotionTime()   "+spareQueue.first().getPromotionTime());
-    			if( (timeToNextPromotion<=CRITICAL_TIME) && !spareQueue.first().isCompletionSuccess())
-    				spare.setProc_state(proc_state.IDLE);
-    			else
-    				spare.setProc_state(proc_state.SLEEP);
-    			
-    			
-    			spare.setBusy(false);
-    			spareBusy=false;
-    			
+    				/*System.out.println(time  + "   preempt spare" );
+    				System.out.println("spareJob.getPeriod()  "+spareJob.getPeriod()+"   spareQueue.first().getPromotionTime()  "+spareQueue.first().getPromotionTime()
+    						+"\n   spareQueue.first().getPeriod()   "+spareQueue.first().getPeriod()
+    						+"   spareQueue.first().isCompletionSuccess()   "+ spareQueue.first().isCompletionSuccess()
+    						+"   spareQueue.first().isFaulty()  "+spareQueue.first().isFaulty());
+    	    	*/	
+    				Job newSpare =  spareQueue.pollFirst();
+    				long exetime = time-spareJob.getStartTime();
+    				spareJob.setRomainingTimeCost(spareJob.getRomainingTimeCost()-exetime);
+    		/*		writer_spare.write("\n"+spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
+  					  	  "\t"+spareJob.getRomainingTimeCost()+"\t"+spareJob.getAbsoluteDeadline()+
+  					  	  "\t"+spareJob.isPreempted+"\t\t"+spareJob.getStartTime()+"\t");
+  					writer_spare.write("\t "+time+"\t  spare  preempted \n");
+    	*/			spareQueue.add(spareJob);
+    				
+    				Iterator<Job> spareit = spareQueue.iterator();
+    				while(spareit.hasNext())
+    				{
+    					Job nextJ= spareit.next();
+    			//		System.out.println("task  "+nextJ.getTaskId()+"  jiob "+nextJ.getJobId() );
+    				}
+    				
+    				//start the high prio job
+    				spareJob= newSpare;
+    				spareJob.setStartTime(time);
+    				spare_current[0]= spareJob;
+    				spareEndTime = (long)time + (long) spareJob.getRomainingTimeCost();
+    			/*	writer_spare.write(spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
+    					  	  "\t"+spareJob.getRomainingTimeCost()+"\t"+spareJob.getAbsoluteDeadline()+"\t"+spareJob.isPreempted+"\t\t"+time+"\t");
+    		*/			        
     			}
+    			
+    		//	System.out.println(time + "   preempted in else"+"  spare empty  "+spareQueue.isEmpty()+"    spareBusy "+ spareBusy);
+    		/*	System.out.println("spareJob.getPeriod()  "+spareJob.getPeriod()+"   spareQueue.first().getPromotionTime()  "+spareQueue.first().getPromotionTime()
+						+"   spareQueue.first().getPeriod()   "+spareQueue.first().getPeriod()
+						+"\n   spareQueue.first().isCompletionSuccess()   "+ spareQueue.first().isCompletionSuccess()
+						+"   spareQueue.first().isFaulty()  "+spareQueue.first().isFaulty());
+	    		*/
+    		
+    		}
+    		
+    		if ( (long)time == (long)spareEndTime-1 && (time>0) && spare.getProc_state()== ProcessorState.ACTIVE)
+			{
+			
+		///////no	 ///    writer1.write(spareEndTime+"    spareEndTime\n");
+		// System.out.println("time   "+time  +" spare queue   "+spareQueue.size());
+	//		+"  task  "+spareQueue.first().getTaskId()+   					"  job  "+spareQueue.first().getJobId());
+			 spare_current[0].setCompletionSuccess(true);
+		//	 System.out.println("time   "+time  +" active primary job task  "+ current[0].getTaskId());
+			//	System.out.println("time    "+time+"  size  "+activeJobQ.size());
+		//	  writer_spare.write(spareEndTime+"    spareEndTime\n");
+				
+				
+				// DELETE THE COMPLETED JOB FROM ACTIVE QUEUE
+			 Iterator<Job> acticeItr = activeJobQ.iterator();
+			 while(acticeItr.hasNext())
+			 {
+				 Job temp1;
+				 temp1  = acticeItr.next();
+		//		 System.out.println("primaary pending  task  "+temp1.getTaskId());
+		    		 
+				 if(temp1.getTaskId()== spare_current[0].getTaskId() && temp1.getJobId()== spare_current[0].getJobId())
+				 {
+					 temp1.setCompletionSuccess(true);
+					 activeJobQ.remove(temp1);
+	//				 System.out.println("time    "+time+" primaary pending task  "+temp1.getTaskId()+"  spare"+spare_current[0].getTaskId() );
+				    break;
+				 }
+			 }
+			 
+			 
+			 
+			 
+			//	timeToNextPromotion = promotionTimes.pollFirst();//spareQueue.first().getPromotionTime()- (long)time;
+		//	System.out.println("timeToNextPromotion   "+timeToNextPromotion+" time "+time);//+"  spareQueue.first().getPromotionTime()   "+spareQueue.first().getPromotionTime());
+			/*if( (timeToNextPromotion<=CRITICAL_TIME) && !spareQueue.first().isCompletionSuccess())
+				spare.setProc_state(proc_state.IDLE);
+			else
+				spare.setProc_state(proc_state.SLEEP);
+			*/
+			
+			/*spare.setBusy(false);
+			spareBusy=false;
+			*/
+			}
+		
     		
     		if (spareBusy && spare.getProc_state()==ProcessorState.ACTIVE)
     		{
@@ -453,7 +524,7 @@ public class ScheduleRMS_EASS {
     			nextActivationTime=  activationTimes.pollFirst();
     		/*	else
     				break;*/
-   		//    System.out.println("nextActivationTime  "+nextActivationTime+" size  "+activationTimes.size());
+   	//	    System.out.println("nextActivationTime  "+nextActivationTime+" size  "+activationTimes.size());
 
     			for (ITask t : taskset) 
 				{
@@ -492,7 +563,9 @@ public class ScheduleRMS_EASS {
 			} 
     		
     //		System.out.println("time   "+time+"out  activeJobQ.first().getActivationDate()  "+activeJobQ.first().getActivationDate());
-    		//////////////////PREEMPTION////////////////////////
+    		
+    		
+    		//////////////////PREEMPTION in PRIMARY////////////////////////
     		
     		if(time>0 && !activeJobQ.isEmpty() && time==activeJobQ.first().getActivationDate() && current[0]!=null )
     		{
@@ -503,7 +576,7 @@ public class ScheduleRMS_EASS {
         			// System.out.println("preemption  ");
 
     				primaryBusy=false;
-    	 //  writer.write("\t"+time+"\t preempted\n");
+    //	   writer_primary.write("\t"+time+"\t preempted\n");
     				executedTime = time - current[0].getStartTime();
     				// System.out.println("time   "+time+"  executedTime  "+executedTime);
 
@@ -526,9 +599,9 @@ public class ScheduleRMS_EASS {
 	        		// QUEUE MAY BE EMPTY , SO CHECK IF IT IS  NOT NULL
 	        		if (j!=null && j.isCompletionSuccess()==false)      // if job in queue is null 
 	        		{
-	        //			System.out.println("time   "+time +"  size  "+activeJobQ.size()+"  task  "+j.getTaskId()+
-		      //  				"  success active job   "+j.isCompletionSuccess());
-	                	primary.setProc_state(proc_state.ACTIVE);
+	        		/*	System.out.println("time   "+time +"  size  "+activeJobQ.size()+"  task  "+j.getTaskId()+
+		        				"  success active job   "+j.isCompletionSuccess());
+	              */  	primary.setProc_state(proc_state.ACTIVE);
 	        			
 	                		
 	        			
@@ -536,7 +609,7 @@ public class ScheduleRMS_EASS {
 	        			//  IDLE SLOTS RECORD
 	                			if (idle!=0)
 	                			{
-	                	 //  writer.write("endtime  "+time+"\n");
+	      //          	   writer_primary.write("endtime  "+time+"\n");
 	                				slot.setLength(idle);  // IF PROCESSOR IS IDLE FROM LONF TIME, RECORD LENGTH OF IDLESLOT
 	                				IdleSlot cloneSlot = (IdleSlot) slot.cloneSlot(); // CLONE THE SLOT
 	                				slots.add(cloneSlot); // ADD THE SLOT TO LIST OR QUEUE
@@ -545,11 +618,11 @@ public class ScheduleRMS_EASS {
 	                			idle =0;   // if job on the queue is not null, initialize  processor idle VARIABLE to 0
 	                			
 	        			current[0]=j;  // TO MAKE IT VISIBLE OUTSIDE BLOCK
-    			//	System.out.println("current[0]  "+current[0].getTaskId()+" start time "+(long)time);
+    		//		System.out.println("current[0]  "+current[0].getTaskId()+" start time "+(long)time);
 
-	        //  writer.write(j.getTaskId()+"\t  "+j.getJobId()+"\t"+j.getActivationDate()+"\t"+j.getACET()+
-	    //        		  "\t"+j.getRemainingTime()+"\t"+j.getAbsoluteDeadline()+"\t"+j.isPreempted+"\t\t"+time+"\t");
-	          			
+	/*          writer_primary.write(j.getTaskId()+"\t  "+j.getJobId()+"\t"+j.getActivationDate()+"\t"+j.getACET()+
+	           		  "\t"+j.getRemainingTime()+"\t"+j.getAbsoluteDeadline()+"\t"+j.isPreempted+"\t\t"+time+"\t");
+	  */        			
 	        			
 	        				j.setStartTime(time);  // other wise start time is one less than current time 
         											// BCOZ START TIME IS EQUAL TO END OF LAST EXECUTED JOB
@@ -564,7 +637,7 @@ public class ScheduleRMS_EASS {
 
 		        		timeToNextArrival= nextActivationTime-lastExecutedJob.getEndTime(); 
 		        	//	System.out.println("nextActivationTime  "+nextActivationTime+"  lastExecutedJob.getEndTime   "+lastExecutedJob.getEndTime());
-		        //		System.out.println("time   "+time+"timeToNextArrival   "+timeToNextArrival);
+		        	//	System.out.println("time   "+time+"timeToNextArrival   "+timeToNextArrival);
 		        	
 		        		if (timeToNextArrival<CRITICAL_TIME)
 		        		{
@@ -579,11 +652,11 @@ public class ScheduleRMS_EASS {
 		        			
 	        			if (idle==0)  // if starting of idle slot
 	        			{
-	        //  writer.write("\nIDLE SLOT");
+	        	//			writer_primary.write("\nIDLE SLOT");
 	        				slot.setId(id++); // SET ID OF SLOT
 	                        slot.setStartTime(time);// START TIME OF SLOT
 	                        current[0] = null;
-	                       //  writer.write("\tstart time\t"+time+"\t");
+	             //            writer_primary.write("\tstart time\t"+time+"\t");
 	                	}
 	        			
 	        			idle++; // IDLE SLOT LENGTH 
@@ -643,7 +716,7 @@ public class ScheduleRMS_EASS {
 					if (j1.getAbsoluteDeadline()<time) // IF TIME IS MORE THAN THE DEADLINE, ITS A MISSING DEADLINE
 					{
 						System.out.println("deadline missed  task id "+j1.getTaskId()+"job id " + j1.getJobId()+"  deadline time  "+j1.getAbsoluteDeadline()+"  time "+time);
-						 //  writer.write("\ndeadline missed  task id "+j1.getTaskId()+"  deadline time  "+j1.getAbsoluteDeadline()+"  time "+time);
+				//		   writer_primary.write("\ndeadline missed  task id "+j1.getTaskId()+"  deadline time  "+j1.getAbsoluteDeadline()+"  time "+time);
 						deadlineMissed= true;
 						
 						/*	writer.close();
@@ -659,15 +732,15 @@ public class ScheduleRMS_EASS {
 		        	if ((long)time==(long)endTime-1 && lastExecutedJob.isCompletionSuccess()==false ) // if current time == endtime 
 		        	{
 		      
-		        	//		System.out.println("                time  "+time+"  end time "+ (endTime-1));
+		      //  			System.out.println("                time  "+time+"  end time "+ (endTime-1));
 		        		//	Job k =  executedList.get(noOfJobsExec-1);// get last executed job added to list or job at the top of executed list
 		        		primaryBusy = false;  // set processor free
 		        		lastExecutedJob.setEndTime(endTime);  // set endtime of job
 		        		
 		        		lastExecutedJob.setCompletionSuccess(true);//-------------------
 		        	//	completedJobs.add(lastExecutedJob);
-		        //	     System.out.println("time   "+endTime+"   task  "+lastExecutedJob.getTaskId()+ "  success   "+lastExecutedJob.isCompletionSuccess());
-		        		   //  writer.write(endTime+"    endtime\n");
+		        	//     System.out.println("time   "+time+"   task  "+lastExecutedJob.getTaskId()+ "  success   "+lastExecutedJob.isCompletionSuccess());
+		        	//	    writer_primary.write(endTime+"    endtime\n");
 		        		// STOP THE RUNNING JOB ON SPARE IF PRIMARY HAS FINISHED IT SUCCESSFULLY
 		        		
 		        		if( spare.getProc_state()==ProcessorState.ACTIVE && lastExecutedJob.getTaskId()== spare_current[0].getTaskId() &&
@@ -681,7 +754,7 @@ public class ScheduleRMS_EASS {
 			        	//	completedJobs.add(lastExecutedJob);
 			 //       	     System.out.println("time   "+time+"  spare   task  "+spare_current[0].getTaskId()+
 			   //     	    		 "  success of  spare and primary  "+spare_current[0].isCompletionSuccess());
-			        		    //  writer1.write(endTime+"    endTime\n");
+			        //		    writer_spare.write(endTime+"    endTime\n");
 			        		if( (timeToNextPromotion<=CRITICAL_TIME) && !spareQueue.first().isCompletionSuccess())
 			    				spare.setProc_state(proc_state.IDLE);
 			    			else
@@ -690,7 +763,7 @@ public class ScheduleRMS_EASS {
 			        		spare.setBusy(false);
 			    			spareBusy=false;
 			        		
-			        		 //    writer1.write(endTime+"    endTime\n");
+			        		
 		 				}
 		        		
 		        		
@@ -758,7 +831,7 @@ public class ScheduleRMS_EASS {
     	
     	System.out.println("primaryEnergy   "+primaryEnergy +" spareEnergy  "+spareEnergy);
     */
-    	writer2.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
+    	writer_energy.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
 	    	    +" "+ Double.valueOf(twoDecimals.format(fq)) +" "+Double.valueOf(twoDecimals.format(primaryEnergy))+
 	    	    " "+Double.valueOf(twoDecimals.format(spareEnergy))+" "+Double.valueOf(twoDecimals.format(npmResult[2] ))
 	    	    + " "+ Double.valueOf(twoDecimals.format(spareEnergy+primaryEnergy))+"\n");
@@ -774,9 +847,9 @@ public class ScheduleRMS_EASS {
     
     }
     
-     // writer.close();
-   //   writer1.close();
-     writer2.close();
+    //  writer_primary.close();
+   //   writer_spare.close();
+     writer_energy.close();
     System.out.println("success ScheduleRMS_EASS");
 	}
 	
