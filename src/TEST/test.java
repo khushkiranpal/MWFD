@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import scheduleRMS.ScheduleRMS_EASS;
 import scheduleRMS.ScheduleRMS_EASS_MWFD;
-import scheduleRMS.ScheduleRMS_EASS_MWFD_rev1PromoTimeMODIFIED;
+import scheduleRMS.ScheduleRMS_EASS_MWFD_amity;
 
 public class test {
 
@@ -13,7 +13,7 @@ public class test {
 		ScheduleRMS_EASS test = new ScheduleRMS_EASS(); 
 	//	test.schedule("test1",10, 2,1.5*10,0.50); // void schedule(String IP_filename, long hyperP, int d) 
 	//System.out.println((long)(3.0/0.05));
-		ScheduleRMS_EASS_MWFD_rev1PromoTimeMODIFIED schedul1 = new ScheduleRMS_EASS_MWFD_rev1PromoTimeMODIFIED();
+		ScheduleRMS_EASS_MWFD_amity schedul1 = new ScheduleRMS_EASS_MWFD_amity();
 		schedul1.schedule();
 	//	ScheduleRMS_EASS_MWFD schedul = new ScheduleRMS_EASS_MWFD();
 	//	schedul.schedule();

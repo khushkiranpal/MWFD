@@ -31,7 +31,7 @@ import taskGeneration.IdleSlot;
 import taskGeneration.Job;
 import taskGeneration.SystemMetric;
 
-public class ScheduleRMS_EASS_MWFD_rev1PromoTimeMODIFIED {
+public class ScheduleRMS_EASS_MWFD_amity {
 			public static final  long hyperperiod_factor= 10;	
 			public static final   double  CRITICAL_TIME=  1.5*hyperperiod_factor;///1500;  //
 			public static final   double  CRITICAL_freq= 0.50;   //0.50;//
