@@ -25,6 +25,12 @@ import taskGeneration.SystemMetric;
 
 public class NoPowerManag {
 	
+	/**
+	 * @param taskset
+	 * @param hyperP
+	 * @return
+	 * @throws IOException
+	 */
 	public  double[] schedule(ArrayList<ITask> taskset, long hyperP) throws IOException
 	{
 
@@ -50,10 +56,7 @@ public class NoPowerManag {
 	    List <IdleSlot> slots = new ArrayList<IdleSlot>();
 	 
 	 //   writer2.write("TASKSET UTILIZATION P_ACTIVE P_IDLE PRIMARY_ENERGY \n");
-	    
-	    
-	   
-	    	   long time=0;
+	       long time=0;
 	    	   
 	    	boolean busy=false;
 	    	long activeTime=0;
@@ -70,20 +73,22 @@ public class NoPowerManag {
 		//	ps.setParameterDouble(taskset);
 			/*for(ITask t : taskset)
 	    	{
-	    	System.out.println("taskset copy  id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+"  acet  "+t.getACET());
+	    	System.out.println("taskset copy  id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+
+	    			"  acet  "+t.getACET()+"  aveg "+(long)t.getAverage_CET()+"  best  "+(long)t.getBest_CET());
 	    	
-	    	}
-			*/
+	    	}*/
+			
 			
 		//	hyper = 100000;//0000;   ////////////////hyper////////////
 			hyper= hyperP;
+			
+			
 			// ACTIVATE ALL TASKS AT TIME 0 INITIALLY IN QUEUE  
 					
-			
-			for(ITask t : taskset)  // activate all tasks at time 0
+					for(ITask t : taskset)  // activate all tasks at time 0
 			{
 						temp=0;
-						j =  t.activateRMS(0);
+						j =  t.activateRMS_energy_ExecTime(0);
 						j.setPriority(t.getPriority());
 						activeJobQ.addJob(j);
 						while (temp<=hyper)
@@ -126,19 +131,22 @@ public class NoPowerManag {
 						long activationTime;
 						activationTime = t.getNextActivation(time-1);  //GET ACTIVATION TIME
 						if (activationTime==time)
-							n= t.activateRMS(time);
+							n= t.activateRMS_energy_ExecTime(time);
 						if (n!=null)
 						{
 							activeJobQ.addJob(n);  // add NEW job to queue
-														
+				//			System.out.println("\nactivation  task  "+n.getTaskId()+ "  time  "+time);							
 						}
 					}
 					
 				} 
 	    		
 	    	//	System.out.println("activeJobQ.first().getActivationDate()  "+activeJobQ.first().getActivationDate());
-	    		//PREEMPTION
-	    		if(time>0 && !activeJobQ.isEmpty() && time==activeJobQ.first().getActivationDate() && current[0]!=null )
+	    	
+	    		
+	    		
+	    		//PREEMPTION	//PREEMPTION	//PREEMPTION	//PREEMPTION	//PREEMPTION
+	    		if(time>0 && !activeJobQ.isEmpty() && time==activeJobQ.first().getActivationDate() && current[0]!=null && busy==true )
 	    		{
 	   //     		System.out.println("activeJobQ.first().getActivationDate()  "+activeJobQ.first().getActivationDate());
 
@@ -147,12 +155,13 @@ public class NoPowerManag {
 	     //   			System.out.println("preemption  ");
 
 	    				busy=false;
-	    			//	 writer.write("\t"+time+"\t preempted\n");
+	    		//		System.out.println(time+"\t preempted\n");
 	    				executedTime = time - current[0].getStartTime();
 	    	//			System.out.println("time   "+time+"  executedTime  "+executedTime);
 
-	    				current[0].setRemainingTime(current[0].getRemainingTime()-executedTime);
-	    				if (current[0].getRemainingTime()>0)
+	    				current[0].setRomainingTimeCost(current[0].getRomainingTimeCost()-executedTime);
+	    				current[0].isPreempted= true;
+	    				if (current[0].getRomainingTimeCost()>0)
 	    				activeJobQ.addJob(current[0]);
 	    		//		System.out.println("preempted job  "+current[0].getTaskId()+" remaining time "+current[0].getRemainingTime()+ "   wcet "+
 	    			//			current[0].getRomainingTimeCost());
@@ -183,10 +192,10 @@ public class NoPowerManag {
 		        			current[0]=j;  // TO MAKE IT VISIBLE OUTSIDE BLOCK
 	    				//	System.out.println("current[0]"+current[0].getTaskId()+" start time "+time);
 
-		        	//		writer.write(j.getTaskId()+"\t  "+j.getJobId()+"\t"+j.getActivationDate()+
-		              //  			  "\t"+j.getRomainingTimeCost()+"\t"+j.getAbsoluteDeadline()+"\t"+j.isPreempted+"\t\t"+time+"\t");
+		        		/*	System.out.print(j.getTaskId()+"\t  "+j.getJobId()+"\t"+j.getActivationDate()+
+		              			  "\t"+j.getRomainingTimeCost()+"\t"+j.getAbsoluteDeadline()+"\t"+j.isPreempted+"\t"+time+"\t");
 		          			
-		        			
+		        	*/		
 		        				j.setStartTime(time);  // other wise start time is one less than current time 
 	        											// BCOZ START TIME IS EQUAL TO END OF LAST EXECUTED JOB
 	        				
@@ -219,8 +228,6 @@ public class NoPowerManag {
 	        		activeTime++;
 			
 	    		
-	    		
-	    		
 	    	
 	    			
 		        //		System.out.println("hyper  "+hyper+"  time  "+time+"  busy "+busy);
@@ -232,7 +239,7 @@ public class NoPowerManag {
 			        	//	Job k =  executedList.get(noOfJobsExec-1);// get last executed job added to list or job at the top of executed list
 			        		busy = false;  // set processor free
 			        		lastExecutedJob.setEndTime(endTime);  // set endtime of job
-			     //   		writer.write(endTime+"    endtime\n");
+			        //		 System.out.println(endTime+"    endtime");
 			       		
 			       
 			    //     		System.out.println("hyper  "+hyper+"  time  "+time+"  busy "+busy);

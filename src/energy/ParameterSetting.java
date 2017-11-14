@@ -98,14 +98,14 @@ public class ParameterSetting {
                 for(int i=0; taskset.get(i) != t; i++)
                 {
                 	w += (int) (Math.ceil((double) w1/taskset.get(i).getPeriod())*taskset.get(i).getWCET_orginal());
-          //     	 System.out.println("task j "+taskset.get(i).getId()+"response time  "+w);
+      //         	 System.out.println("task j "+taskset.get(i).getId()+"response time  "+w);
                 }
             }
             if( w > t.getDeadline())
              t.setResponseTime(0);
             else
             	t.setResponseTime(w);
-      //    System.out.println("response time  "+w);
+   //      System.out.println("response time  "+w);
         }
 	/*	for (ITask t : taskset)
 		{
@@ -115,6 +115,35 @@ public class ParameterSetting {
 		}*/
 	}
 	
+	public void setResponseTimeForMWFD(ArrayList<ITask> taskset)
+	{
+		for(ITask t:taskset)
+      {
+	//	System.out.println("task i "+t.getId()+" wcet  "+t.getWcet());
+            double w=t.getWcet(),w1=w-1;
+            while(w != w1)
+            {
+                w1 = w;
+                w =t.getWcet();
+                for(int i=0; taskset.get(i) != t; i++)
+                {
+                	w += (int) (Math.ceil((double) w1/taskset.get(i).getPeriod())*taskset.get(i).getWcet());
+       //        	 System.out.println("task j "+taskset.get(i).getId()+"response time  "+w);
+                }
+            }
+            if( w > t.getDeadline())
+             t.setResponseTime(0);
+            else
+            	t.setResponseTime(w);
+     //    System.out.println("response time  "+w);
+        }
+		for (ITask t : taskset)
+		{
+		//	System.out.println("task i "+t.getId()+" wcet  "+t.getWcet()+"  response  "+t.getResponseTime());
+			
+
+		}
+	}
 	public void setPromotionTime(ArrayList<ITask> taskset)
 	{
 		for (ITask t : taskset)

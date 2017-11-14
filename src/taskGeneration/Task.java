@@ -17,9 +17,9 @@ import platform.Processor;
  */
 public  class Task implements ITask {
         private long id;
-	private final long C;
-	private final long D;
-	private final long T;
+	private  long C;
+	private  long D;
+	private  long T;
     private long arrival;
 	private  long WCET_orginal;
 	private long wcet;
@@ -67,7 +67,8 @@ public  class Task implements ITask {
 	}
 	
 	// FOR rms_DOUBLE Task(arrival,id, wcet,period, deadline,  priority,ACET,BCET );
-	public Task(long arrival, long id, long wcet, long period,long deadline, int priority, double ACET, double BCET) {
+	public Task(long arrival, long id, long wcet, long period,long deadline, int priority, double ACET,
+			double BCET,double average_CET, double Best_CET ) {
 		
 		this.C = wcet;
 		this.D = deadline;
@@ -82,12 +83,13 @@ public  class Task implements ITask {
 		this.id = ++count;
 		this.ACET = ACET;
 		this.BCET = BCET;
-		
+		this.Best_CET= Best_CET;
+		this.average_CET= average_CET;
 	}
 
 	// FOR rmsMWFD_RMS_EEPS Task(arrival,id, wcet,period, deadline,  priority,ACET,BCET );
 		public Task(long arrival, long id,long wcet, long period,long deadline, int priority,double Slack,  double ACET, 
-				double BCET	, Processor p, boolean primary,Processor backupProcessor) {
+				double BCET,double average_CET, double Best_CET , Processor p, boolean primary,Processor backupProcessor) {
 			
 			this.C = wcet;
 			this.D = deadline;
@@ -102,6 +104,8 @@ public  class Task implements ITask {
 			//this.id = ++count;
 			this.ACET = ACET;
 			this.BCET = BCET;
+			this.Best_CET= Best_CET;
+			this.average_CET= average_CET;
 			this.Slack = Slack;
 			
 		}
@@ -166,6 +170,27 @@ public void setP(Processor p) {
 }
 
 
+
+	/**
+ * @param c the c to set
+ */
+public void setC(long c) {
+	C = c;
+}
+
+/**
+ * @param d the d to set
+ */
+public void setD(long d) {
+	D = d;
+}
+
+/**
+ * @param t the t to set
+ */
+public void setT(long t) {
+	T = t;
+}
 
 	/**
  * @return the primaryProcessor
@@ -365,11 +390,11 @@ public long getWCET_orginal() {
 	}
         
         public ITask cloneTask_RMS_double() {
-    		return new Task(arrival,id, WCET_orginal,period, deadline,  priority,ACET,BCET );
+    		return new Task(arrival,id, WCET_orginal,period, deadline,  priority,ACET,BCET,average_CET,Best_CET);
     	}
     
         public ITask cloneTask_MWFD_RMS_EEPS() {
-    		return new Task(arrival,id, WCET_orginal,period, deadline,  priority,Slack,ACET,BCET,p,primary, backupProcessor );
+    		return new Task(arrival,id, WCET_orginal,period, deadline,  priority,Slack,ACET,BCET,average_CET,Best_CET,p,primary, backupProcessor );
     	}
         
 	private final PriorityQueue<Job> activeJobs = new PriorityQueue<Job>(2,

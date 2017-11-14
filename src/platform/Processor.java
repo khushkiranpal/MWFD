@@ -35,10 +35,14 @@ public class Processor {
 	public long sleepTime=0;
 	public long activeTime=0;
 	private long endTimeCurrentJob;
-	public long  totalJobsExecByProc =0;
+	
 	private Job currentJob;
 	private long nextActivationTime ;
 	private long timeToNextArrival;
+	private long noOfPriJobs=0;
+	private long noOfBackJobs=0;
+	private long  totalJobsExecByProc =0;
+	
 	// PROCESSOR STATE  ACTIVE  1, 	IDLE   -1, 	SLEEP   0
      private ProcessorState proc_state;
      
@@ -59,7 +63,7 @@ public class Processor {
 	
 	public ArrayList<ITask> taskset = new ArrayList<ITask>();
 	public ISortedJobQueue primaryJobQueue = new SortedJobQueue(); // contains the primary activated jobs
-	
+	public ISortedJobQueue readyQueue = new SortedJobQueue();
 	 private final Comparator<Job> comparator = new Comparator<Job>() {
     	 public int compare(Job j1, Job j2) {
 			int cmp =  (int) (j1.getPromotionTime()-j2.getPromotionTime());
@@ -105,6 +109,48 @@ public class Processor {
 	
 	
 	
+
+	/**
+	 * @return the noOfPriJobs
+	 */
+	public long getNoOfPriJobs() {
+		return noOfPriJobs;
+	}
+
+	/**
+	 * @param noOfPriJobs the noOfPriJobs to set
+	 */
+	public void setNoOfPriJobs(long noOfPriJobs) {
+		this.noOfPriJobs = noOfPriJobs;
+	}
+
+	/**
+	 * @return the noOfBackJobs
+	 */
+	public long getNoOfBackJobs() {
+		return noOfBackJobs;
+	}
+
+	/**
+	 * @param noOfBackJobs the noOfBackJobs to set
+	 */
+	public void setNoOfBackJobs(long noOfBackJobs) {
+		this.noOfBackJobs = noOfBackJobs;
+	}
+
+	/**
+	 * @return the totalJobsExecByProc
+	 */
+	public long getTotalJobsExecByProc() {
+		return totalJobsExecByProc;
+	}
+
+	/**
+	 * @param totalJobsExecByProc the totalJobsExecByProc to set
+	 */
+	public void setTotalJobsExecByProc(long totalJobsExecByProc) {
+		this.totalJobsExecByProc = totalJobsExecByProc;
+	}
 
 	/**
 	 * @return the timeToNextArrival

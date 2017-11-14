@@ -20,7 +20,7 @@ public class Fault {
 		int count = 0;
 	
 		ArrayList<Integer> faults = new ArrayList<Integer>();
-		PoissonDistribution poisson = new PoissonDistribution(0.000001) 	;
+		PoissonDistribution poisson = new PoissonDistribution(0.000001) 	;//0.000001
 		for(int i= 1; i<= time; i++)
 		{
 			if (poisson.sample()==1)
@@ -36,7 +36,7 @@ public class Fault {
 	//	System.out.println("count  "+count);
 		
 	//	double sample = poisson.sample();
-		
+	//	System.out.println("faults   "+faults.size());
 		return faults;
 		
 	}

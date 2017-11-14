@@ -35,17 +35,19 @@ public class GenerateTaskSetTxtUUnifast {
    //   	System.out.print("Enter no. of processors\t");
     	int m=1 ; //input.nextInt();
     	System.out.print("Enter no. of tasksets\t");
+    	double taskUti = 0.1; // or 0.05
     	int TOTAL_NUM_TASKSETS= input.nextInt(); // NUMBER OF TASKSETS
-    //	System.out.print("Enter no. of tasks in taskset\t");
-    	int n=15;  //input.nextInt(); // NUMBER OF TASKS
     //	System.out.print("Enter no. of MAX PERIOD\t");
-    	long MAX_PERIOD=100000;//100;    //input.nextLong(); // MAX PERIOD
+    	long MAX_PERIOD=100;//100000   //input.nextLong(); // MAX PERIOD
     //	System.out.println(" FOR IMPLICIT , Press 0  OR \n    FOR CONSTRAINED , Press -1");
     	int deadlineModel = 0;   //input.nextInt();
-   // 	System.out.println("Enter utilization");
-    	double Utotal=0.15;//=input.nextDouble();
+    	System.out.println("Enter utilization");
+    	double Utotal=input.nextDouble();//0.15;//
+    	 //	System.out.print("Enter no. of tasks in taskset\t");
+    	int n= (int)(Utotal/taskUti) ;   //input.nextInt(); // NUMBER OF TASKS    15;  //
+    	System.out.println("n   "+n);
    //	 System.out.println("Enter 1 for UUnifast  and 2 for Sporadic");
-     int tasksetType = 1;   //input.nextInt();
+    	int tasksetType = 1;   //input.nextInt();
         // FILE NAME SETTING
         DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm");
         Calendar cal = Calendar.getInstance();
@@ -55,11 +57,11 @@ public class GenerateTaskSetTxtUUnifast {
 
         if (deadlineModel==0)
         {
-         filename = "D:/CODING/TASKSETS/uunifast/IMPLICIT_TOT_SETS_"+TOTAL_NUM_TASKSETS+"_MAX_P_"+MAX_PERIOD+"_PROC_"+m+"_"+date+".txt";
+         filename = "D:/CODING/TASKSETS/uunifast/IMPLICIT_TOT_SETS_"+TOTAL_NUM_TASKSETS+"_n_"+n+"_MAX_P_"+MAX_PERIOD+"_Utotal_"+Utotal+"_"+date+".txt";
         }
         else
         {
-        	filename = "D:/CODING/TASKSETS/uunifast/CONSTRAINED_TOT_SETS_"+TOTAL_NUM_TASKSETS+"_MAX_P_"+MAX_PERIOD+"_PROC_"+m+"_"+date+".txt";
+        	filename = "D:/CODING/TASKSETS/uunifast/CONSTRAINED_TOT_SETS_"+TOTAL_NUM_TASKSETS+"_n_"+n+"_MAX_P_"+MAX_PERIOD+"_Utotal_"+Utotal+"_"+date+".txt";
 
         }
     	
@@ -82,29 +84,41 @@ public class GenerateTaskSetTxtUUnifast {
         		
         		for (int count =1;count<=TOTAL_NUM_TASKSETS;count++)
         		{
-        			Utotal += 0.01; //((double) nextInt(15, 85)/(double) 100); // random1.nextDouble(); //10
+        			/*Utotal += 0.01; //((double) nextInt(15, 85)/(double) 100); // random1.nextDouble(); //10
         			if (Double.valueOf(twoDecimals.format(Utotal))==0.85)
-        				Utotal=0.15;
-        		System.out.println("Utotal  "+Utotal+"   TOTAL_NUM_TASKSETS  "+count);
+        				Utotal=0.15;*/
+        		System.out.println(" count   TOTAL_NUM_TASKSETS  "+count);
         			genTask = new UUniFastDiscardTaskSetGen(gen, nbTasks, Utotal, deadlineModel,MAX_PERIOD);
 
      			  tasks = genTask.generate();
      			 ArrayList<ITask> taskSet = new  ArrayList<ITask>(Arrays.asList(tasks));
-     		/*	boolean schedulable = worstCaseResp_TDA_RMS(taskSet);
+     			long hyper = SystemMetric.hyperPeriod(taskSet);
+     			
+     			if(hyper >1000000)
+   			 {
+   				count--;
+   				System.out.println(" count  "+count+" hyper large ");//+"  TASKSETNO. "+noOfTasksets--);
+   				continue;
+   		
+   			 } 
+     			boolean schedulable = worstCaseResp_TDA_RMS(taskSet);
+     			
      			if (schedulable)
      			{
-     			taskwrite.write("TASKSETNO. "+noOfTasksets++ +" nbTasks "+nbTasks+" Utilization "+ Double.valueOf(twoDecimals.format(SystemMetric.utilisation(tasks)))+"\n");
+     				
+     				taskwrite.write("TASKSETNO. "+noOfTasksets++ +" nbTasks "+nbTasks+" Utilization "+ Double.valueOf(twoDecimals.format(SystemMetric.utilisation(tasks)))+"\n");
      			}
      			else
      			{
      				count--;
      				System.out.println("un schedulable  "+schedulable+"  TASKSETNO. "+noOfTasksets);
      				continue;
-     			}*/
-     			taskwrite.write("TASKSETNO. "+noOfTasksets++ +" nbTasks "+nbTasks+" Utilization "+ Double.valueOf(twoDecimals.format(SystemMetric.utilisation(tasks)))+"\n");
+     			}
+     		//	taskwrite.write("TASKSETNO. "+noOfTasksets++ +" nbTasks "+nbTasks+" Utilization "+ Double.valueOf(twoDecimals.format(SystemMetric.utilisation(tasks)))+"\n");
      			
      			//  System.out.println("\n nbTasks   "+ nbTasks);
-     			 for (ITask task : tasks)
+     			 
+     				 for (ITask task : tasks)
                  {
      				taskwrite.write("Id= "+task.getId()+" C= "+(long)task.getWcet()+
      	        			  " D= "+task.getDeadline()+" P= "+task.getPeriod()+" u= "+Double.valueOf(twoDecimals.format(((double)task.getWcet()/(double)task.getPeriod())))+"\n"); 

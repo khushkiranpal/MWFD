@@ -27,7 +27,20 @@ public interface ITask {
 	 * @param primary the primary to set
 	 */
 	public void setPrimary(boolean primary) ;
+	/**
+	 * @param c the c to set
+	 */
+	public void setC(long c) ;
 
+	/**
+	 * @param d the d to set
+	 */
+	public void setD(long d) ;
+
+	/**
+	 * @param t the t to set
+	 */
+	public void setT(long t) ;
 		/**
 	 * @return the p
 	 */

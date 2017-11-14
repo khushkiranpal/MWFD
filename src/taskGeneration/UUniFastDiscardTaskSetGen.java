@@ -60,7 +60,7 @@ public class UUniFastDiscardTaskSetGen {
 				nextSumU = sumU	* Math.pow(random.nextDouble(), (double) 1/ (nbTask - (i + 1)));
 				util[i] = sumU - nextSumU;
 				temp+=util[i];
-			System.out.println("util[i]   "+util[i] + "  temp  "+(temp));
+		//	System.out.println("util[i]   "+util[i] + "  temp  "+(temp));
 			
 				sumU = nextSumU;
 				if (util[i] > 1) {

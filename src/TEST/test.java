@@ -4,17 +4,29 @@ import java.io.IOException;
 
 import scheduleRMS.ScheduleRMS_EASS;
 import scheduleRMS.ScheduleRMS_EASS_MWFD;
+import scheduleRMS.ScheduleRMS_EASS_MWFD_rev1PromoTimeMODIFIED;
 
 public class test {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		/*ScheduleRMS_EASS test = new ScheduleRMS_EASS(); 
-		test.schedule("testhaque",30,8); // void schedule(String IP_filename, long hyperP, int d) 
-	*/
-		ScheduleRMS_EASS_MWFD schedul = new ScheduleRMS_EASS_MWFD();
-		schedul.schedule();
-	/*	DecimalFormat twoDecimals = new DecimalFormat("#.##");  // upto 2 decimal points
+		ScheduleRMS_EASS test = new ScheduleRMS_EASS(); 
+	//	test.schedule("test1",10, 2,1.5*10,0.50); // void schedule(String IP_filename, long hyperP, int d) 
+	//System.out.println((long)(3.0/0.05));
+		ScheduleRMS_EASS_MWFD_rev1PromoTimeMODIFIED schedul1 = new ScheduleRMS_EASS_MWFD_rev1PromoTimeMODIFIED();
+		schedul1.schedule();
+	//	ScheduleRMS_EASS_MWFD schedul = new ScheduleRMS_EASS_MWFD();
+	//	schedul.schedule();
+	
+	/*	
+		Random rand = new Random();
+		int tempPr= 1+rand.nextInt(2);
+		System.out.println(tempPr);
+		
+		*/
+		
+		
+		/*	DecimalFormat twoDecimals = new DecimalFormat("#.##");  // upto 2 decimal points
 		double time= 0.01, c=4.15;
 		while(time <=4.16)
 		{
