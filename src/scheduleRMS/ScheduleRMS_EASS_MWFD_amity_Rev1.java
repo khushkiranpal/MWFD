@@ -36,7 +36,7 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
 			public static final   double  CRITICAL_TIME=  1.5*hyperperiod_factor;///1500;  //
 			public static final   double  CRITICAL_freq= 0.50;   //0.50;//
 		
-			public static final int d = 2;
+			public static final int d = 0;
 			private double freq=1;
 	
 	/**
@@ -50,12 +50,12 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
 	 */
 	public void schedule() throws IOException
 	{
-	String inputfilename= "testhaque";
+	String inputfilename= "test1";
     FileTaskReaderTxt reader = new FileTaskReaderTxt("D:/CODING/TASKSETS/uunifast/"+inputfilename+".txt"); // read taskset from file
     DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm");
     Calendar cal = Calendar.getInstance();
     String date = dateFormat.format(cal.getTime());
- // String filename= "D:/CODING/TEST/EESP/allocationPromoTime"+"_"+inputfilename+"_"+date+".txt";
+  String filename= "D:/CODING/TEST/EESP/allocationPromoTime"+"_"+inputfilename+"_"+date+".txt";
   //String filename4= "D:/CODING/TEST/EESP/tasksProcWise"+"_"+inputfilename+"_"+date+".txt";
 // 	String filename1= "D:/CODING/TEST/EESP/processorwise"+"_"+inputfilename+"_"+date+".txt";
     String filename2= "D:/CODING/TEST/EESP/energyMWFDPromoTime "+"_"+inputfilename+"_"+date+".txt";
@@ -65,11 +65,11 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
     /*  String filename2= "D:/CODING/MWFD results/output/energyMWFDPromoTime "+"_"+inputfilename+"_"+date+".txt";
     String filename3= "D:/CODING/MWFD results/output/tasksMWFDPromoTime "+"_"+inputfilename+"_"+date+".txt";
    */  
- //   Writer writer_allocation = new FileWriter(filename);
+    Writer writer_allocation = new FileWriter(filename);
  //  Writer writer_schedule = new FileWriter(filename1);
     Writer writer_energy = new FileWriter(filename2);
     Writer writer_tasks = new FileWriter(filename3);
-    Writer writer_analysis = new FileWriter(filename3);
+    Writer writer_analysis = new FileWriter(filename5);
     
    // Writer writer_taskProcWise = new FileWriter(filename4);
     DecimalFormat twoDecimals = new DecimalFormat("#.##");  // upto 1 decimal points
@@ -209,7 +209,7 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
     	
       	
       	//ALLOCATION STARTED 
- //   	writer_allocation.write("Proc TASK U WCET PERIOD IS_PRIMARY BACKUP_PR PRIMARY_PR");
+   	writer_allocation.write("Proc TASK U WCET PERIOD IS_PRIMARY BACKUP_PR PRIMARY_PR");
     	
         
 		// SORT IN DECREASING ORDER OF UTILIZATION FOR MFWD wcet according to frequency
@@ -272,6 +272,8 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
     		}
     		t.setPrimary(true);
     		t.setFrequency(fq);
+    		if(t.getId()==373)
+    			t.setFrequency(1);
     		minP.taskset.add(t);
     		minP.setWorkload(Double.valueOf(twoDecimals.format(minP.getWorkload()+u)));
     		t.setP(minP);
@@ -408,25 +410,25 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
      
    	for(Processor pMin : freeProcList)
 	{
- //  		writer_allocation.write("\n\nprocessor   "+pMin.getId()+"\t frequency   "+fq+"\n");
+   		writer_allocation.write("\n\nprocessor   "+pMin.getId()+"\t frequency   "+fq+"\n");
 		for(ITask t : pMin.taskset)
 			
     	{
-	/*		writer_allocation.write(pMin.getId()+" "+t.getId()+" "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
-			+" "+t.getWCET_orginal()+" "+t.getPeriod()+" "+
+			writer_allocation.write(pMin.getId()+" "+t.getId()+" "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
+			+" "+t.getWCET_orginal()+" "+t.getPeriod()+" "+t.getFrequency()+" "+
 			" "+t.isPrimary()+	" "+t.getBackupProcessor().getId()+" "+t.getPrimaryProcessor().getId()+"\n");
-		*/	
-	/*		System.out.println("task   "+t.getId()+"  u  "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
+			
+			System.out.println("task   "+t.getId()+"  u  "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
 			+"   primary  "+t.isPrimary()+"  Proc   "+t.getP().getId()+	"   backup p  "+t.getBackupProcessor().getId()+
 			"   primary  "+t.getPrimaryProcessor().getId());
-   */
+   
     	}
-	//	writer_allocation.write("\n"+"FAULT  \t\t");
+		writer_allocation.write("\n"+"FAULT  \t\t");
 		for(int fa: pMin.getFault())
 		{
-///			writer_allocation.write(fa+"\t\t");
+			writer_allocation.write(fa+"\t\t");
 		}
-//		writer_allocation.write("\nU "+Double.valueOf(twoDecimals.format((SystemMetric.utilisation(pMin.taskset)))));
+		writer_allocation.write("\nU "+Double.valueOf(twoDecimals.format((SystemMetric.utilisation(pMin.taskset)))));
 	}
    	  
    	  
@@ -538,7 +540,9 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
 		
       /*   writer_schedule.write("\nP_ID jobno. TASKID  JOBID PR/BK FREQ WCET DEADLINE  isPreempted STARTTIME ENDTIME FAULTY fullBackupsExecuted partialBackupsExecuted fullBackupsCancelled"
     		+ "	 cancelledPrimariesFull   cancelledPrimariesPartial  fullPrimariesExecuted noOfFaults \n");
-     */   nextActivationTime=  activationTimes.pollFirst();
+     */
+		writer_analysis.write("P_ID TASKID JOBID PR/BK");
+		nextActivationTime=  activationTimes.pollFirst();
           // System.out.println("nextActivationTime  "+nextActivationTime);
     	 timeToNextPromotion = promotionTimes.get(0);
     		for (Processor proc : freeProcList)
@@ -826,10 +830,13 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
         					"   job  "+proc.getCurrentJob().getJobId()+ " isCompletionSuccess() "+proc.getCurrentJob().isCompletionSuccess()+
         					 "  p/b "+proc.getCurrentJob().isPrimary());
         		*/
-        			 if (proc.getCurrentJob()!=null && proc.getCurrentJob().isCompletionSuccess()==false)      // if job in queue is null 
+        			 if (proc.getCurrentJob()!=null && 
+        					 proc.getCurrentJob().isCompletionSuccess()==false)      // if job in queue is null 
 	        		{
         				// System.out.println("time   "+time+"   p  "+proc.getId()+"  task  "+proc.getCurrentJob().getTaskId()+"  job   "+proc.getCurrentJob().getJobId());
-        				
+        				 writer_analysis.write("\n"+proc.getId()+" "+proc.getCurrentJob().getTaskId()+" "
+        						 +proc.getCurrentJob().getJobId()+" "+proc.getCurrentJob().isPrimary()
+        						 +" "+time);	
         				proc.setIdleEndTime(time); // IF PROCESSOR WAS FREE , END IDLE SLOT
 
 						// RECORD THE SLOT LENGTH
@@ -1221,10 +1228,11 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
     
     }
     
-//   writer_allocation.close();
+  writer_allocation.close();
 //  writer_schedule.close();
     writer_energy.close();
     writer_tasks.close();
+    writer_analysis.close();
  //   writer_taskProcWise.close();
     System.out.println("success ScheduleRMS_EASS_MWFD_rev1PromoTime");
 	}

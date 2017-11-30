@@ -56,12 +56,12 @@ public class ScheduleRMS_EASS {
  // String filename= "D:/CODING/TEST/EESP/primary"+"_"+inputfilename+"_"+date+".txt";
    //String filename1= "D:/CODING/TEST/EESP/spare"+"_"+inputfilename+"_"+date+".txt";
    
-  //  String filename2= "D:/CODING/TEST/EESP/energyEASS"+"_"+inputfilename+"_"+date+".txt";
-  //  String filename3= "D:/CODING/TEST/EESP/tasksEASS"+"_"+inputfilename+"_"+date+".txt";
+   String filename2= "D:/CODING/TEST/EESP/energyEASS"+"_"+inputfilename+"_"+date+".txt";
+   String filename3= "D:/CODING/TEST/EESP/tasksEASS"+"_"+inputfilename+"_"+date+".txt";
  
-    String filename2= "D:/CODING/MWFD results/output/energyEASS"+"_"+inputfilename+"_"+date+".txt";
+   /* String filename2= "D:/CODING/MWFD results/output/energyEASS"+"_"+inputfilename+"_"+date+".txt";
     String filename3= "D:/CODING/MWFD results/output/tasksEASS"+"_"+inputfilename+"_"+date+".txt";
- 
+ */
   //    Writer writer_primary = new FileWriter(filename);
   //    Writer writer_spare = new FileWriter(filename1);
     Writer writer_energy = new FileWriter(filename2);
