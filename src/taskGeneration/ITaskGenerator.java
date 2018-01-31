@@ -12,6 +12,8 @@ package taskGeneration;
  */
 public interface ITaskGenerator {
     public ITask generate(double utilization, int deadlineModel, long period);
+    public ITask generate(double utilization, int deadlineModel, long period, long hyperperiod_factor);
+    
     public ITask generate(double utilization, int deadlineModel);
      public ITask newInstance(Object... params);
      public ITask generateSporadic ( int deadlineModel, double utilization, double parameter, int periodDistribution );

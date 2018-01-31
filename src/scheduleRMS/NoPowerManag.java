@@ -262,6 +262,7 @@ public class NoPowerManag {
 		result[0]= energyConsumed.energyActive(activeTime, 1);
 		result[1] =energyConsumed.energy_IDLE(hyper-activeTime);
 		result[2] = primaryEnergy;
+		//System.out.println("energy_IDLE    "+result[1]+"  energyActive  "+result[0]);
 	    return result;
 	    
 	 //   writer2.write(total_no_tasks++ +" "+ Double.valueOf(twoDecimals.format(U_SUM))+" "+activeTime+" "+ (hyper-activeTime) 

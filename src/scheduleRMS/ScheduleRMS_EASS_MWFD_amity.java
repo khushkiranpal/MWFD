@@ -31,6 +31,10 @@ import taskGeneration.IdleSlot;
 import taskGeneration.Job;
 import taskGeneration.SystemMetric;
 
+/**
+ * @author KHUSHKIRAN PAL
+ *   HAQUE HAS BEEN IMPROVED BY ALLOACTING THE TASKS TO BOTH PROCESSORS. 
+ */
 public class ScheduleRMS_EASS_MWFD_amity {
 			public static final  long hyperperiod_factor= 10;	
 			public static final   double  CRITICAL_TIME=  1.5*hyperperiod_factor;///1500;  //
@@ -50,7 +54,7 @@ public class ScheduleRMS_EASS_MWFD_amity {
 	 */
 	public void schedule() throws IOException
 	{
-	String inputfilename= "IMPLICIT_TOT_SETS_100_n_9_MAX_P_100_Utotal_0.9_02_11_2017_14_05";
+	String inputfilename= "IMPLICIT_TOT_SETS_100_n_5_MAX_P_100_Utotal_0.5_02_11_2017_14_04";
     FileTaskReaderTxt reader = new FileTaskReaderTxt("D:/CODING/MWFD results/taskset/"+inputfilename+".txt"); // read taskset from file
     DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm");
     Calendar cal = Calendar.getInstance();

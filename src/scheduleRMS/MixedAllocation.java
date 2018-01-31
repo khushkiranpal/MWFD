@@ -31,13 +31,18 @@ import taskGeneration.IdleSlot;
 import taskGeneration.Job;
 import taskGeneration.SystemMetric;
 
-public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
-			public static final  long hyperperiod_factor= 10;	
+/**
+ * @author KHUSHKIRAN PAL
+ *  DYNAMIC 
+ */
+public class MixedAllocation {
+		//GLOBAL PARAMETERS
+			public static final  long hyperperiod_factor= 10;	//
 			public static final   double  CRITICAL_TIME=  1.5*hyperperiod_factor;///1500;  //
 			public static final   double  CRITICAL_freq= 0.50;   //0.50;//
 		
-			public static final int d = 0;
-			private double freq=1;
+			public static final int d = 0;  // FAULT TOLERANCE PARAMETER
+			private double freq=1; // TEMP PARAMETER
 	
 	/**
 	 * @throws IOException
@@ -55,16 +60,14 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
     DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm");
     Calendar cal = Calendar.getInstance();
     String date = dateFormat.format(cal.getTime());
-  String filename= "D:/CODING/TEST/EESP/allocationPromoTime"+"_"+inputfilename+"_"+date+".txt";
-  //String filename4= "D:/CODING/TEST/EESP/tasksProcWise"+"_"+inputfilename+"_"+date+".txt";
+    String filename= "D:/CODING/TEST/EESP/allocationPromoTime"+"_"+inputfilename+"_"+date+".txt";
+  //String filename4= "D:/CODING/TEST/EESP/tasksProcWise"+"_"+inputfilename+"_"+date+".txt"; // TEMP USE
 // 	String filename1= "D:/CODING/TEST/EESP/processorwise"+"_"+inputfilename+"_"+date+".txt";
     String filename2= "D:/CODING/TEST/EESP/energyMWFDPromoTime "+"_"+inputfilename+"_"+date+".txt";
     String filename3= "D:/CODING/TEST/EESP/tasksMWFDPromoTime "+"_"+inputfilename+"_"+date+".txt";
     String filename5= "D:/CODING/TEST/EESP/analysis"+"_"+inputfilename+"_"+date+".txt";
     
-    /*  String filename2= "D:/CODING/MWFD results/output/energyMWFDPromoTime "+"_"+inputfilename+"_"+date+".txt";
-    String filename3= "D:/CODING/MWFD results/output/tasksMWFDPromoTime "+"_"+inputfilename+"_"+date+".txt";
-   */  
+    
     Writer writer_allocation = new FileWriter(filename);
  //  Writer writer_schedule = new FileWriter(filename1);
     Writer writer_energy = new FileWriter(filename2);
@@ -75,30 +78,28 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
     DecimalFormat twoDecimals = new DecimalFormat("#.##");  // upto 1 decimal points
     DecimalFormat fourDecimals = new DecimalFormat("#.###");
     Energy energyConsumed = new Energy();
+    SysClockFreq frequency = new SysClockFreq();
     Job[] current= new Job[2], spare_current = new Job[2];  // FOR SAVING THE NEWLY INTIAlIZED JOB  FROM JOBQUEUE SO THAT IT 
 	// IS VISIBLE OUTSIDE THE BLOCK
-    
-  ITask task;
+    ITask task;
     ITask[] set = null;
     double U_SUM;
     int m =2;// no. of processors
-    // final   long  CRITICAL_TIME= 4;
-      
-    // IDLE SLOTS QUEUE
-    IdleSlot slot = new IdleSlot(); // idle slot
-    List <IdleSlot> slots = new ArrayList<IdleSlot>();
     int total_no_tasksets=1;
+   
     writer_energy.write("TASKSET UTILIZATION FREQ TOTAL_ENERGY \n");
     writer_tasks.write("MWFDfullBackupsExecuted partialBackupsExecuted fullBackupsCancelled"
     		+ "	 cancelledPrimariesFull   cancelledPrimariesPartial  fullPrimariesExecuted noOfFaults");
- //   writer_taskProcWise.write("proc primary  backup  total");
+ //   writer_taskProcWise.write("proc primary  backup  total"); //  TEMP USE
  
-    SysClockFreq frequency = new SysClockFreq();
-    		///////////////////////////////////////ScheduleRMS_EASS//////////
+  
+    		///////////////////////////////////////ScheduleRMS_EASS_ haque//////////
     		ScheduleRMS_EASS test = new ScheduleRMS_EASS();
     			test.schedule(inputfilename,hyperperiod_factor, d,CRITICAL_TIME,CRITICAL_freq);
-    
-    while ((set = reader.nextTaskset()) != null)
+    			///////////////////////////////////////ScheduleRMS_EASS_ haque//////////
+    			
+    			
+    while ((set = reader.nextTaskset()) != null) // SCHEDULING STARTS FOR ALL TASKSETS IN FILE
     {
     	long fullBackupsExecuted=0;
     	long partialBackupsExecuted=0;
@@ -113,14 +114,12 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
     	boolean deadlineMissed = false;
     	Job lastExecutedJob= null, primaryJob, backupJob;
         ProcessorState proc_state = null;
-        
-    	  int id = 0;  // idle slot id 
-    	 long time=0 ;
-    	     long timeToNextPromotion=0, spareActiveTime = 0;
-			long timeToNextArrival=0;
-    	     long endTime = 0; // endtime of job
-			long spareEndTime=0;
-    	     long idle = 0;  // idle time counter for processor idle slots
+        long time=0 ;
+        long timeToNextPromotion=0, spareActiveTime = 0;
+        long timeToNextArrival=0;
+        long endTime = 0; // endtime of job
+        long spareEndTime=0;
+        long idle = 0;  // idle time counter for processor idle slots
     	     SchedulabilityCheck schedule = new SchedulabilityCheck();
     	
     	 Processor primary = new Processor();
@@ -131,7 +130,9 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
 			
 			primary.setBusy(false);
 			primary.setProc_state(proc_state.SLEEP);
-    	//LIST OF FREE PROCESSORS
+    	
+			
+			//LIST OF FREE PROCESSORS
 			Comparator<Processor> comparator = new Comparator<Processor>() {
 		    	 public int compare(Processor p1, Processor p2) {
 					int cmp =  (int) (p1.getId()-p2.getId());
@@ -173,10 +174,7 @@ public class ScheduleRMS_EASS_MWFD_amity_Rev1 {
 	    		t.setC(t.getC()*hyperperiod_factor);
 	    		
 	    	}
-	       // if(hyper>100000000)
-	     //////////////   	hyper = hyperperiod;
-		
-			
+	      	
     	ParameterSetting ps = new ParameterSetting();
     	boolean unschedulable = false,schedulability= false;
     	ps.setBCET(taskset, 0.5);

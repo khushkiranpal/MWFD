@@ -18,7 +18,33 @@ public  class TaskGenerator implements ITaskGenerator {
 	private static int CURRENT_PRIORITY = 1;
 	protected final Random random = new Random();
        
-    /**
+	/** for haque period between 10-100
+    * for hyperperiod factor to implement DVS in decimal values
+    * @param utilization
+    * @param deadlineModel
+    * @return
+    */
+   public ITask generate(double utilization, int deadlineModel, long MAX_PERIOD, long hyperperiod_factor) {
+		long  start = 0;
+		long period = nextInt((10*(int) hyperperiod_factor), (int) MAX_PERIOD);
+		long wcet = Math.max(1, (long) (period * utilization));
+		long deadline = period; // implicit deadline
+		if (deadlineModel < 0) { // constrained deadline
+			deadline = nextInt((int) wcet, (int) period);
+		} else if (deadlineModel > 0) { // arbitrary deadline
+			deadline = nextInt(1, (int) MAX_PERIOD);
+		}
+		
+		int priority = CURRENT_PRIORITY++;
+		if (CURRENT_PRIORITY > 50)
+			CURRENT_PRIORITY = 1;
+               
+        return newInstance(start, wcet, period, deadline, priority);
+	}
+	
+	
+	
+    /** for haque period between 10-100
      *
      * @param utilization
      * @param deadlineModel

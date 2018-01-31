@@ -108,7 +108,7 @@ public class SysClockFreq {
 				freq=t.getFrequency();
 		//	System.out.println("task freq  "+ t.getFrequency());
 		}
-		System.out.println("   freq   "+Double.valueOf(twoDecimals.format(freq)));	
+	//	System.out.println("   freq   "+Double.valueOf(twoDecimals.format(freq)));	
 		return Double.valueOf(twoDecimals.format(freq));
 	
 	}
