@@ -35,7 +35,7 @@ import taskGeneration.SystemMetric;
  * @author KHUSHKIRAN PAL
  *  DYNAMIC 
  */
-public class MixedAllocation {
+public class MixedAllocationOverloading {
 		//GLOBAL PARAMETERS
 			/*public static final  long hyperperiod_factor= 10;	//
 			public static final   double  CRITICAL_TIME=  1.5*hyperperiod_factor;///1500;  //
@@ -53,6 +53,16 @@ public class MixedAllocation {
 	/**
 	 * @throws IOException
 	 */
+	/**
+	 * @param inputfilename
+	 * @param outputFolder
+	 * @param inputFolder
+	 * @param hyperperiod_factor
+	 * @param d
+	 * @param CRITICAL_TIME
+	 * @param CRITICAL_freq
+	 * @throws IOException
+	 */
 	public void schedule(String inputfilename,String outputFolder,String inputFolder, long hyperperiod_factor, int d,double CRITICAL_TIME,double CRITICAL_freq) throws IOException
 	{
 	//String inputfilename= "testhaque";
@@ -60,16 +70,16 @@ public class MixedAllocation {
     DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm");
     Calendar cal = Calendar.getInstance();
     String date = dateFormat.format(cal.getTime());
-    String filename= outputFolder+"allocationMixed"+"_"+inputfilename+"_"+date+".txt";
-    String filename4= outputFolder+"taskProcMixed"+"_"+inputfilename+"_"+date+".txt"; // TEMP USE
- 	String filename1= outputFolder+"scheduleMixed"+"_"+inputfilename+"_"+date+".txt";
-    String filename2= outputFolder+"energyMixed"+"_"+inputfilename+"_"+date+".txt";
-    String filename3= outputFolder+"tasksMixed"+"_"+inputfilename+"_"+date+".txt";
-    String filename5= outputFolder+"analysisMixed"+"_"+inputfilename+"_"+date+".txt";
+    String filename= outputFolder+"allocationMixedOver"+"_"+inputfilename+"_"+date+".txt";
+    String filename4= outputFolder+"taskProcMixedOver"+"_"+inputfilename+"_"+date+".txt"; // TEMP USE
+ 	String filename1= outputFolder+"scheduleMixedOver"+"_"+inputfilename+"_"+date+".txt";
+    String filename2= outputFolder+"energyMixedOver"+"_"+inputfilename+"_"+date+".txt";
+    String filename3= outputFolder+"tasksMixedOver"+"_"+inputfilename+"_"+date+".txt";
+    String filename5= outputFolder+"analysisMixedOver"+"_"+inputfilename+"_"+date+".txt";
     
    // System.out.println(filename);
  //   Writer writer_allocation = new FileWriter(filename);
-   Writer writer_schedule = new FileWriter(filename1);
+    Writer writer_schedule = new FileWriter(filename1);
     Writer writer_energy = new FileWriter(filename2);
     Writer writer_tasks = new FileWriter(filename3);
  //   Writer writer_analysis = new FileWriter(filename5);
@@ -87,8 +97,8 @@ public class MixedAllocation {
     int m =2;// no. of processors
     int total_no_tasksets=1;
    
-    writer_energy.write("MixedTASKSET UTILIZATION MIN_FREQ MAX_FREQ TOTAL_ENERGY \n");
-    writer_tasks.write("MixedfullBackupsExecuted partialBackupsExecuted fullBackupsCancelled"
+    writer_energy.write("MixedOverTASKSET UTILIZATION MIN_FREQ MAX_FREQ TOTAL_ENERGY \n");
+    writer_tasks.write("MixedOverfullBackupsExecuted partialBackupsExecuted fullBackupsCancelled"
     		+ "	 cancelledPrimariesFull   cancelledPrimariesPartial  fullPrimariesExecuted noOfFaults");
   //  writer_taskProcWise.write("proc primary  backup  total"); //  TEMP USE
  
@@ -163,7 +173,7 @@ public class MixedAllocation {
     	prioritize(taskset);
     	ArrayList<Integer> fault = new ArrayList<Integer>();
 		Fault f = new Fault();
-		 long hyper =SystemMetric.hyperPeriod(taskset);  /////////////// HYPER PERIOD////////////
+		 long hyper = SystemMetric.hyperPeriod(taskset);  /////////////// HYPER PERIOD////////////
 	    	System.out.println(" hyper  "+hyper);  
 
 	    	for(ITask t : taskset)
@@ -412,8 +422,8 @@ public class MixedAllocation {
  		{
 			double load = (SystemMetric.utilisation(p.taskset));
 		//	System.out.println("   load   " +load);
-			double slack = Math.max(0, (1- load));
-		//	System.out.println("   slack   " +slack);
+			double slack = 1- load;
+	//		System.out.println("   slack   " +slack);
 			double utiPrimary=0;
             for(ITask tp : p.taskset)
             {
@@ -422,13 +432,40 @@ public class MixedAllocation {
        /*         System.out.println("  p  "+p.getId()+"  task   "+tp.getId()+"   wcet  "+tp.getWcet()+
                 " task u   "+	Double.valueOf(twoDecimals.format(((double)tp.getWCET_orginal()/(double)tp.getD())))+
                 		"   utiPrimary    "+utiPrimary);
-       */     }
+        */    }
             double newUtiPrimary= utiPrimary+slack;
-         
-        	   fq = Math.max(CRITICAL_freq, (utiPrimary/newUtiPrimary));
-     	//      System.out.println("  newUtiPrimary  "+newUtiPrimary+"  fq   "+fq);
-        	          
-            do
+      
+           
+         	   fq = Math.max(CRITICAL_freq, (utiPrimary/newUtiPrimary));
+       
+      //      System.out.println("OVER  newUtiPrimary  "+newUtiPrimary+"  fq   "+fq);
+            
+            
+        
+      /*      if(fq<minfq)
+            	minfq=fq;
+            if(fq>maxfq)
+            	maxfq=fq;
+            System.out.println("   frequency   "+fq);
+           
+            for(ITask tp : p.taskset)
+            {
+            	if(tp.isPrimary())
+            	tp.setFrequency(fq);
+                	
+            }
+            ps.set_freq_MixedAlloc(p.taskset,Double.valueOf(twoDecimals.format(fq)));   // set frequency
+            for(ITask t : p.taskset)
+    			
+        	{
+    			System.out.println("proc  "+p.getId()+"task   "+t.getId()+"   wcet  "+t.getWcet()+"  u  "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
+    			+"   primary  "+t.isPrimary()+"  Proc   "+t.getP().getId());
+    			
+       
+        	}
+            
+         //   System.out.println("frequency   " +fq);
+*/         do
          {
         	    if(fq<minfq)
                 	minfq=fq;
@@ -443,7 +480,16 @@ public class MixedAllocation {
                     	
                 }
                 ps.set_freq_MixedAlloc(p.taskset,Double.valueOf(twoDecimals.format(fq)));   // set frequency
-         
+            /*    for(ITask t : p.taskset)
+        			
+            	{
+        			System.out.println("proc  "+p.getId()+"task   "+t.getId()+"   wcet  "+t.getWcet()+"  u  "+ Double.valueOf(twoDecimals.format(((double)t.getWcet()/(double)t.getDeadline())))
+        			+"   primary  "+t.isPrimary()+"  Proc   "+t.getP().getId());
+        			
+           
+            	}
+            */    
+             //   System.out.println("frequency   " +fq);
           
             schedulability = schedule.worstCaseResp_TDA_RMS(p.taskset);//, fq);
          	
@@ -451,7 +497,8 @@ public class MixedAllocation {
          	if (schedulability)
          	{
         //		System.out.println("setting response");
-        		ps.setResponseTimeForMWFD(p.taskset);
+        	//	ps.setResponseTimeForMWFD(p.taskset);
+         		ps.setResponseTimeMixedOVERLOADING(p.taskset,d);
         		ps.setPromotionTime(p.taskset);
     	//	System.out.println("processor   "+p.getId()+"   size  "+p.taskset.size()+
     	//			"  w  "+p.getWorkload());
@@ -468,7 +515,7 @@ public class MixedAllocation {
          		else
          		{
          			fq= fq+0.05;
-         	//		System.out.println("unschedulable "+p.getId()+"  fq  "+fq);
+     //    			System.out.println("unschedulable "+p.getId()+"  fq  "+fq);
          		//	System.exit(0);
          		}
          	 if (fq>1)
@@ -491,7 +538,7 @@ public class MixedAllocation {
      	fault = f.lamda_F(hyper, CRITICAL_freq, minfq, d);        //////////////FAULT////////////
 	
      	
-     	//	fault.add(10);
+  //   		fault.add(1711880);
      
   /* 	for(Processor pMin : freeProcList)
 	{
@@ -625,7 +672,7 @@ public class MixedAllocation {
      /*    writer_schedule.write("\nP_ID jobno. TASKID  JOBID PR/BK FREQ WCET DEADLINE  isPreempted STARTTIME ENDTIME FAULTY fullBackupsExecuted partialBackupsExecuted fullBackupsCancelled"
     		+ "	 cancelledPrimariesFull   cancelledPrimariesPartial  fullPrimariesExecuted noOfFaults \n");
      */
-	//	writer_analysis.write("P_ID TASKID JOBID PR/BK TIME");
+//	writer_analysis.write("P_ID TASKID JOBID PR/BK TIME");
 		nextActivationTime=  activationTimes.pollFirst();
           // System.out.println("nextActivationTime  "+nextActivationTime);
     	 timeToNextPromotion = promotionTimes.get(0);
@@ -801,8 +848,8 @@ public class MixedAllocation {
          						proc.getCurrentJob().isPrimary()+" "+Double.valueOf(twoDecimals.format(	proc.getCurrentJob().getFrequency()))
          						+" "+	proc.getCurrentJob().getRomainingTimeCost()+" "+	proc.getCurrentJob().getDeadline()
          						+" "+	proc.getCurrentJob().isPreempted+" "+proc.getCurrentJob().getStartTime());
-        	*/
-        			//set end time
+        	
+        	*/		//set end time
         			
         			if(proc.getCurrentJob().isPrimary())
         				proc.getCurrentJob().setEndTime(time+proc.getCurrentJob().getRemainingTime());
@@ -861,7 +908,7 @@ public class MixedAllocation {
             				proc.getCurrentJob().setEndTime(time+proc.getCurrentJob().getRomainingTimeCost());
         				proc.setEndTimeCurrentJob(proc.getCurrentJob().getEndTime()-1);
         				proc.setBusy(true);
-        	/*		
+        		/*	
         				if(proc.getCurrentJob().isPrimary())
         				writer_schedule.write("\n"+proc.getId()+" "+proc.getNoOfPriJobs()+" "+proc.getCurrentJob().getTaskId()+" "+proc.getCurrentJob().getJobId()+" "+
         						proc.getCurrentJob().isPrimary()+" "+Double.valueOf(twoDecimals.format(	proc.getCurrentJob().getFrequency()))
@@ -872,8 +919,8 @@ public class MixedAllocation {
             						proc.getCurrentJob().isPrimary()+" "+Double.valueOf(twoDecimals.format(	proc.getCurrentJob().getFrequency()))
             						+" "+	proc.getCurrentJob().getRomainingTimeCost()+" "+	proc.getCurrentJob().getDeadline()
             						+" "+	proc.getCurrentJob().isPreempted+" "+time+" ");
-            	*/		
-        				
+            			
+        		*/		
 	        		}
         		}
         		else if (proc.readyQueue.isEmpty() && proc.isBusy()==false )
@@ -885,7 +932,7 @@ public class MixedAllocation {
 					{
 					// System.out.println("idle slot started");
         			
-      			//	writer_schedule.write("\n"+proc.getId()+ " "+time+" idlestart");
+        			//	writer_schedule.write("\n"+proc.getId()+ " "+time+" idlestart");
 						proc.setIdleSlotLength(proc.getIdleSlotLength()+1);// INCREMENT THE  LENGTH OF IDLE SLOT FROM 0 TO 1
 						proc.setIdleStartTime(time);
 					}
@@ -993,11 +1040,12 @@ public class MixedAllocation {
 					 writer_tasks.write("deadline missed  task id "+proc.getCurrentJob().getTaskId()+"job id " + proc.getCurrentJob().getJobId()+"  deadline time  "
 							 +"\t"+proc.getCurrentJob().getActivationDate()+proc.getCurrentJob().getAbsoluteDeadline()
 							 +"  time "+time);	
-	/*				writer_schedule.write("\ndeadline missed  task id "+proc.getCurrentJob().getTaskId()+"  deadline time  "+proc.getCurrentJob().getAbsoluteDeadline()+"  time "+time);
+			/*		writer_schedule.write("\ndeadline missed  task id "+proc.getCurrentJob().getTaskId()+"  deadline time  "+proc.getCurrentJob().getAbsoluteDeadline()+"  time "+time);
 					writer_schedule.write("\n "+time+"\t"+"\t"+proc.getCurrentJob().getTaskId()+"\t"+proc.getCurrentJob().getJobId()+"\t"+proc.getCurrentJob().getActivationDate()+
 					"\t"+proc.getCurrentJob().getRemainingTime()+"\t"+proc.getCurrentJob().getAbsoluteDeadline()+"\t"+proc.getCurrentJob().getProc().getId()+
 					"\t"+proc.getCurrentJob().getStartTime()+"\t"+proc.getCurrentJob().getEndTime()+"\t"+proc.getCurrentJob().NoOfPreemption);
-			*/		deadlineMissed= true;
+				*/	deadlineMissed= true;
+					
 				
 				
 			}
@@ -1013,41 +1061,41 @@ public class MixedAllocation {
         			proc.setBusy(false);
         			proc.getCurrentJob().setCompletionSuccess(true);
         			proc.setActiveEnergy(energyConsumed.energyActive((time-proc.getCurrentJob().getStartTime()+1), proc.getCurrentJob().getFrequency()));
-        		/*	 System.out.println(" //at end time of any job    p  "+proc.getId()+"   end time  "+proc.getEndTimeCurrentJob()
+        	/*		 System.out.println(" //at end time of any job    p  "+proc.getId()+"   end time  "+proc.getEndTimeCurrentJob()
         		+"  primary   "+proc.getCurrentJob().isPrimary()+"  task  "+proc.getCurrentJob().getTaskId()+"  job  "+proc.getCurrentJob().getJobId());
-        		*/	if(proc.getCurrentJob().isPrimary())
+        	*/		if(proc.getCurrentJob().isPrimary())
         			{
         				
         		    
         				fullPrimariesExecuted++;
-        	/*				writer_schedule.write("\n"+proc.getId()+" "+proc.getNoOfPriJobs()+" "+proc.getCurrentJob().getTaskId()+" "+proc.getCurrentJob().getJobId()+" "+
+        		/*			writer_schedule.write("\n"+proc.getId()+" "+proc.getNoOfPriJobs()+" "+proc.getCurrentJob().getTaskId()+" "+proc.getCurrentJob().getJobId()+" "+
     						proc.getCurrentJob().isPrimary()+" "+Double.valueOf(twoDecimals.format(	proc.getCurrentJob().getFrequency()))
     						+" "+	proc.getCurrentJob().getRemainingTime()+" "+	proc.getCurrentJob().getDeadline()
     						+" "+	proc.getCurrentJob().isPreempted+" "+proc.getCurrentJob().getStartTime()+" ");
         			writer_schedule.write(""+proc.getCurrentJob().getEndTime()+" "+proc.getCurrentJob().isFaulty() );
-        	*/		   }
+        		*/	   }
         			else
         			{
         				
         				fullBackupsExecuted++;
         		   // 	System.out.println("time  "+time  +"  proc  "+proc.getId()+"  fullBackupsExecuted   "+fullBackupsExecuted);
         							
-        	/*		 writer_schedule.write("\n"+proc.getId()+" "+proc.getNoOfBackJobs()+" "+proc.getCurrentJob().getTaskId()+" "+proc.getCurrentJob().getJobId()+" "+
+   /*     			 writer_schedule.write("\n"+proc.getId()+" "+proc.getNoOfBackJobs()+" "+proc.getCurrentJob().getTaskId()+" "+proc.getCurrentJob().getJobId()+" "+
         						proc.getCurrentJob().isPrimary()+" "+Double.valueOf(twoDecimals.format(	proc.getCurrentJob().getFrequency()))
         						+" "+	proc.getCurrentJob().getRomainingTimeCost()+" "+	proc.getCurrentJob().getDeadline()
         						+" "+	proc.getCurrentJob().isPreempted+" "+proc.getCurrentJob().getStartTime()+" ");
             			writer_schedule.write(""+proc.getCurrentJob().getEndTime()+" "+proc.getCurrentJob().isFaulty() );
             			writer_schedule.write(" "+fullBackupsExecuted +" "+partialBackupsExecuted +" "+fullBackupsCancelled+" "
         				        + cancelledPrimariesFull +" "+  cancelledPrimariesPartial +" "+ fullPrimariesExecuted +" "+noOfFaults);
-        	*/	
+        		*/
         			}
         			if(proc.getCurrentJob().isPrimary() && !proc.getCurrentJob().isFaulty())
         			{
         			// delete the backup job if not started
         					boolean cancel = false;
-        		//		System.out.println("time  "+time  +"   //at end time of any job    delete the backup job if not started ");
-        	//			 System.out.println("p  "+proc.getCurrentJob().getBackupProcessor().getId()+"  size  "+proc.getCurrentJob().getBackupProcessor().backupJobQueue.size());
-        				 Iterator<Job> itr_backup = proc.getCurrentJob().getBackupProcessor().backupJobQueue.iterator();
+        		/*		System.out.println("time  "+time  +"   //at end time of any job    delete the backup job if not started ");
+        			 System.out.println("backup p  "+proc.getCurrentJob().getBackupProcessor().getId()+"  size  "+proc.getCurrentJob().getBackupProcessor().backupJobQueue.size());
+        		*/		 Iterator<Job> itr_backup = proc.getCurrentJob().getBackupProcessor().backupJobQueue.iterator();
         			while(itr_backup.hasNext())
         			{
         				Job backup = itr_backup.next();
@@ -1057,7 +1105,7 @@ public class MixedAllocation {
         				{
         				/*	 System.out.println(" time  "+time+"   p  "+proc.getId()+ "  backup p  " +proc.getCurrentJob().getBackupProcessor().getId()+
         						"  delete task  "+	backup.getTaskId() +"  job  "+ backup.getJobId());
-        			*/		backup.setCompletionSuccess(true);
+        				*/	backup.setCompletionSuccess(true);
         					proc.getCurrentJob().getBackupProcessor().backupJobQueue.remove(backup);
         					
         					/*if(backup.isPreempted==true)
@@ -1065,16 +1113,18 @@ public class MixedAllocation {
         					else*/
         					cancel=true;
         			    	 fullBackupsCancelled++;
-        			/*		writer_schedule.write(" "+fullBackupsExecuted +" "+partialBackupsExecuted +" "+fullBackupsCancelled+" "
+        		/*			writer_schedule.write(" "+fullBackupsExecuted +" "+partialBackupsExecuted +" "+fullBackupsCancelled+" "
             				        + cancelledPrimariesFull +" "+  cancelledPrimariesPartial +" "+ fullPrimariesExecuted +" "+noOfFaults);
-        		*/	/*		System.out.println("time   "+time+"   fullPrimariesExecuted  "+fullPrimariesExecuted+
+        			*//*		System.out.println("time   "+time+"   fullPrimariesExecuted  "+fullPrimariesExecuted+
             		    			"  proc.getCurrentJob().getEndTime()  "+proc.getCurrentJob().getEndTime());
         			*/		break;
         				}
         			}
+        	//		System.out.println("cancel  "+cancel);
         			if (!cancel)
         			{
-        				 Iterator<Job> itr_back = proc.getCurrentJob().getBackupProcessor().readyQueue.iterator();
+        				 
+        				Iterator<Job> itr_back = proc.getCurrentJob().getBackupProcessor().readyQueue.iterator();
              			while(itr_back.hasNext())
              			{
              				Job backup = itr_back.next();
@@ -1082,7 +1132,7 @@ public class MixedAllocation {
              			//	System.out.println("backup.isFaulty()  "+backup.isFaulty());
              				if(!backup.isFaulty() && backup.getTaskId()==proc.getCurrentJob().getTaskId() && backup.getJobId()==proc.getCurrentJob().getJobId())
              				{
-             		/*			 System.out.println(" time  "+time+"   p  "+proc.getId()+ "  backup p  " +proc.getCurrentJob().getBackupProcessor().getId()+
+             		/*			 System.out.println(" ready queue time  "+time+"   p  "+proc.getId()+ "  backup p  " +proc.getCurrentJob().getBackupProcessor().getId()+
              						"  delete task  "+	backup.getTaskId() +"  job  "+ backup.getJobId());
              		*/			backup.setCompletionSuccess(true);
              					proc.getCurrentJob().getBackupProcessor().readyQueue.remove(backup);
@@ -1091,9 +1141,9 @@ public class MixedAllocation {
              						partialBackupsExecuted++;
              					else
              						fullBackupsCancelled++;
-             			/*		writer_schedule.write(" "+fullBackupsExecuted +" "+partialBackupsExecuted +" "+fullBackupsCancelled+" "
+             				/*	writer_schedule.write(" "+fullBackupsExecuted +" "+partialBackupsExecuted +" "+fullBackupsCancelled+" "
                  				        + cancelledPrimariesFull +" "+  cancelledPrimariesPartial +" "+ fullPrimariesExecuted +" "+noOfFaults);
-             			*/		/*System.out.println("time   "+time+"   fullPrimariesExecuted  "+fullPrimariesExecuted+
+             				*/	/*System.out.println("time   "+time+"   fullPrimariesExecuted  "+fullPrimariesExecuted+
                  		    			"  proc.getCurrentJob().getEndTime()  "+proc.getCurrentJob().getEndTime());
              				*/	break;
              				}
@@ -1121,7 +1171,7 @@ public class MixedAllocation {
         								onBackup.getFrequency()));
             	
         	//			proc.setActiveEnergy(energyConsumed.energyActive((time-onBackup.getStartTime()), onBackup.getFrequency()));
-        	/*			writer_schedule.write("\n//deletethebackup"+proc.getCurrentJob().getBackupProcessor().getId()+" "+onPrimary.getBackupProcessor().getNoOfBackJobs()+
+        			/*	writer_schedule.write("\n//deletethebackup"+proc.getCurrentJob().getBackupProcessor().getId()+" "+onPrimary.getBackupProcessor().getNoOfBackJobs()+
         						" "+onBackup.getTaskId()+" "+onBackup.getJobId()+" "+
         						onBackup.isPrimary()+" "+Double.valueOf(twoDecimals.format(	onBackup.getFrequency()))
         						+" "+	onBackup.getRomainingTimeCost()+" "+onBackup.getDeadline()
@@ -1169,11 +1219,12 @@ public class MixedAllocation {
             		    	 onBackup.getPrimaryProcessor().setProc_state(proc_state.IDLE);
             		    	 
             		    	 onBackup.getPrimaryProcessor().setActiveEnergy(energyConsumed.energyActive
-            		    			 ((time-onPrimary.getStartTime()+1), onPrimary.getFrequency()));
+            		    			 ((time-onPrimary.getStartTime()+1),
+            		    					 onPrimary.getFrequency()));
             		    	 onBackup.getPrimaryProcessor().setBusy(false);
             		    //	 onPrimary.getPrimaryProcessor().setBusy(false);
             				onPrimary.setCompletionSuccess(true);
-            		//		proc.setActiveEnergy(energyConsumed.energyActive((time-onPrimary.getStartTime()), onPrimary.getFrequency()));
+            			//	proc.setActiveEnergy(energyConsumed.energyActive((time-onPrimary.getStartTime()), onPrimary.getFrequency()));
             			/*	writer_schedule.write("\ndeletetheprimary"+onBackup.getPrimaryProcessor().getId()+" "+proc.getNoOfPriJobs()+" "+onPrimary.getTaskId()+" "+onPrimary.getJobId()+" "+
             						onPrimary.isPrimary()+" "+Double.valueOf(twoDecimals.format(	onPrimary.getFrequency()))
             						+" "+	onPrimary.getRemainingTime()+" "+	onPrimary.getDeadline()
@@ -1223,12 +1274,13 @@ public class MixedAllocation {
     	    	    +" "+ Double.valueOf(twoDecimals.format(minfq))+" "+ Double.valueOf(twoDecimals.format(maxfq))
     	    	    +" " +Double.valueOf(twoDecimals.format(energyTotal))+"\n");
         System.out.println("   tasksets  "+total_no_tasksets+" energy  "+energyTotal);
-      
+    
         if (deadlineMissed)
-    		break;
+        	break;
         
-       /* if(total_no_tasksets>500)
-    	   break;*/
+      /*  if(total_no_tasksets>500)
+     	   break;*/
+        
     }
     
  // writer_allocation.close();
@@ -1237,7 +1289,7 @@ public class MixedAllocation {
     writer_tasks.close();
  //   writer_analysis.close();
   //  writer_taskProcWise.close();
-    System.out.println("finish mixed");
+    System.out.println("finish mixed over");
 	}
 	
 	public static void prioritize(ArrayList<ITask> taskset)

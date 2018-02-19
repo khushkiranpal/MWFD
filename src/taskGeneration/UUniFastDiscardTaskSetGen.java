@@ -66,15 +66,29 @@ public class UUniFastDiscardTaskSetGen {
 
 			util = generateUtilizations();
 			for (int i = 0; i < util.length; i++) {
-				//taskset[i] = taskGenerator.generate(util[i], deadlineModel,MAX_PERIOD);
+				taskset[i] = taskGenerator.generate(util[i], deadlineModel,MAX_PERIOD);
 		// for hyperperiod factor to implement DVS in decimal values
-				taskset[i] = taskGenerator.generate(util[i], deadlineModel,MAX_PERIOD,hyperperiod_factor);
+		//		taskset[i] = taskGenerator.generate(util[i], deadlineModel,MAX_PERIOD,hyperperiod_factor);
 	                                 
 			}
 			// taskGenerator.finalizeTaskset(taskset, nbProc);
 			return taskset;
         }
         
+        public ITask[] generate(long hyperperiod_factor) {
+    		ITask[] taskset = new ITask[nbTask];
+                    double[] util;
+
+    			util = generateUtilizations();
+    			for (int i = 0; i < util.length; i++) {
+    				//taskset[i] = taskGenerator.generate(util[i], deadlineModel,MAX_PERIOD);
+    		// for hyperperiod factor to implement DVS in decimal values
+    				taskset[i] = taskGenerator.generate(util[i], deadlineModel,MAX_PERIOD,hyperperiod_factor);
+    	                                 
+    			}
+    			// taskGenerator.finalizeTaskset(taskset, nbProc);
+    			return taskset;
+            }
         
         
         

@@ -7,6 +7,7 @@
 package taskGeneration;
 
 
+import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import platform.Processor;
@@ -17,11 +18,21 @@ import platform.Processor;
  */
 public interface ITask {
 	
-
+//	public ArrayList<Integer> instances;
 	/**
 	 * @return the primary
 	 */
 	public boolean isPrimary() ;
+
+/**
+ * @return the noInstance
+ */
+public ArrayList<Instance> getNoInstance() ;
+
+/**
+ * @param noInstance the noInstance to set
+ */
+public void addNoInstance(Instance e) ;
 
 	/**
 	 * @param primary the primary to set
@@ -223,7 +234,7 @@ public void setDeadline(long deadline);
 		 * @param time
 		 *            time units
 		 */
-		
+		public  Job activateRMS_EESSbackupdelay(long time);
 		public  Job activateRMS_energy_ExecTime(long time);
 		public Job activate(long time);
 

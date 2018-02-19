@@ -76,6 +76,26 @@ public class Job {
 		
 	}
 	
+	 // for EESS BACKUP
+	public Job(JobId id, long activationDate2,long remainingTimeCost, long wcet, long absoluteDeadline2, long period, 
+			double freq, long promotionTime, double BCET, double ACET, double Best_CET,
+			double average_CET , ArrayList<Instance> noInstance) { 
+		jobId= id;
+		this.remainingTimeCost =remainingTimeCost;//(long)average_CET; ////////////////remainingTimeCost;//
+		remainingTime =wcet;//(long)ACET;  ////////////////wcet;//
+		this.deadline= absoluteDeadline2;
+		this.activationDate = activationDate2;
+		absoluteDeadline = absoluteDeadline2;
+		this.period = period;
+		this.frequency = freq;
+		this.promotionTime= promotionTime;
+		this.BCET =  (long)BCET;
+		this.ACET =  (long)ACET;
+		this.Best_CET = Best_CET;
+		this.average_CET= average_CET;
+		this.noInstance= noInstance;
+	}
+	
 	
     
 //	Job job = new  Job(jobId, time, WCET_orginal, wcet, time + deadline, period, frequency, (long)(Slack+ time), BCET, ACET,Best_CET,average_CET);
@@ -135,13 +155,39 @@ public class Job {
 	 private Processor p, backupProcessor ,primaryProcessor;
 	 private int type;   //IF TASK TYPE IS HEAVY WEIGHT OR LIGHT WEIGHT
 	 private boolean primary; // true for primary, false for secondary
+	 // EESP PARAMETERS HAQUE
+	 private ArrayList<Instance> noInstance;
+	 public boolean upperQ= false;
+	 private ArrayList<Instance> currentNoOfInstance= new ArrayList<Instance>() ;
+
+	 
+	 /**
+	  * @return the noInstance
+	  */
+	 public ArrayList<Instance> getNoInstance() {
+	 	return noInstance;
+	 }
+
+	 /**
+	  * @param noInstance the noInstance to set
+	  */
+	 public void addNoInstance(Instance e) {
+	 	noInstance.add(e) ;
+	 }
 	 
 	 
-	 
-	 
-	 
-	 
-	 
+	/**
+	 * @return the currentNoOfInstance
+	 */
+	public ArrayList<Instance> getCurrentNoOfInstance() {
+		return currentNoOfInstance;
+	}
+	/**
+	 * @param currentNoOfInstance the currentNoOfInstance to set
+	 */
+	public void addCurrentNoOfInstance(Instance c) {
+		currentNoOfInstance.add(c);
+	}
 	/* *//**
 	 * @return the p
 	 *//*
@@ -509,12 +555,27 @@ public class Job {
 	/**
 	 * @return job
 	 */
-	public Job cloneJob(){
+	public Job cloneJobBackuDelay(){
 	//	return  new Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline, isPreemptive,type);
-    	return new  Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline,
-    			period, frequency, (long)promotionTime,BCET,ACET,Best_CET, average_CET);
+		  ArrayList<Instance> cloneInstance = new ArrayList<Instance>(noInstance.size());
+	        for (Instance in: noInstance)
+	        {
+	        	cloneInstance.add(new Instance(in));
+	     //  System.out.println(" cloning  size   "+cloneInstance.size());
+	        }
+		
+		return new  Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline,
+    			period, frequency, (long)promotionTime,BCET,ACET,Best_CET, average_CET,cloneInstance);
 
 	}
+	
+	public Job cloneJob(){
+		//	return  new Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline, isPreemptive,type);
+			
+			return new  Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline,
+	    			period, frequency, (long)promotionTime,BCET,ACET,Best_CET, average_CET);
+
+		}
 	public Job cloneJob_MWFD_RMS_EEPS(){
 		//	return  new Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline, isPreemptive,type);
 	    	return new  Job(jobId, activationDate, remainingTimeCost, remainingTime, absoluteDeadline,

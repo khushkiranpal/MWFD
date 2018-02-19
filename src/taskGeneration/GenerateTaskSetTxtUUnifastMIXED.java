@@ -23,7 +23,7 @@ import org.apache.commons.math3.distribution.ExponentialDistribution;
  * @author kiran
  *
  */
-public class GenerateTaskSetTxtUUnifast {
+public class GenerateTaskSetTxtUUnifastMIXED {
 	public static Random random = new Random();
 	/**
 	 * @param args
@@ -35,7 +35,7 @@ public class GenerateTaskSetTxtUUnifast {
    //   	System.out.print("Enter no. of processors\t");
     	int m=1 ; //input.nextInt();
     	System.out.print("Enter no. of tasksets\t");
-    	double taskUti = 0.1; // or 0.05
+    	double taskUti = 0.1;// or 0.05 //0.1;
     	int TOTAL_NUM_TASKSETS= input.nextInt(); // NUMBER OF TASKSETS
     //	System.out.print("Enter no. of MAX PERIOD\t");
     	long MAX_PERIOD=100;//100000   //input.nextLong(); // MAX PERIOD
@@ -57,11 +57,11 @@ public class GenerateTaskSetTxtUUnifast {
 
         if (deadlineModel==0)
         {
-         filename = "D:/CODING/TASKSETS/uunifast/IMPLICIT_TOT_SETS_"+TOTAL_NUM_TASKSETS+"_n_"+n+"_MAX_P_"+MAX_PERIOD+"_Utotal_"+Utotal+"_"+date+".txt";
+         filename = "D:/CODING/MIXED OVERLOADING/14-2-18/DUAL PROCESSOR/TASKSET/IMPLICIT_TOT_SETS_"+TOTAL_NUM_TASKSETS+"_n_"+n+"_MAX_P_"+MAX_PERIOD+"_Utotal_"+Utotal+"_"+date+".txt";
         }
         else
         {
-        	filename = "D:/CODING/TASKSETS/uunifast/CONSTRAINED_TOT_SETS_"+TOTAL_NUM_TASKSETS+"_n_"+n+"_MAX_P_"+MAX_PERIOD+"_Utotal_"+Utotal+"_"+date+".txt";
+        	filename = "D:/CODING/MIXED OVERLOADING/14-2-18/DUAL PROCESSOR/TASKSET/CONSTRAINED_TOT_SETS_"+TOTAL_NUM_TASKSETS+"_n_"+n+"_MAX_P_"+MAX_PERIOD+"_Utotal_"+Utotal+"_"+date+".txt";
 
         }
     	

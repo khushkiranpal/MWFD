@@ -1,7 +1,9 @@
 package TEST;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
+import platform.Fault;
 import scheduleRMS.ScheduleRMS_EASS;
 import scheduleRMS.ScheduleRMS_EASS_MWFD;
 import scheduleRMS.ScheduleRMS_EASS_MWFD_amity;
@@ -13,14 +15,27 @@ public class test {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		ScheduleRMS_EASS test = new ScheduleRMS_EASS(); 
+		String input = "fault_05_02_2018_22_26";
+		String filename =  "D:/CODING/MIXED ALLOCATION/DUAL PROCESSOR/31-1-18/TASKSET/"+input+".txt";
+	      
+		ArrayList<Integer> fault = new ArrayList<Integer>();
+		Fault f = new Fault();
+		//fault = f.lamda_F(100000, 0.5, 0.3,2);
+	//	f.writeInFile(fault);
+	//	f.readFromFile(filename);
+	//	MixedAllocation schedul1 = new MixedAllocation();
+	//	ScheduleRMS_EASS_MWFD_amity schedul2 = new ScheduleRMS_EASS_MWFD_amity();
+		
+		
+	//	test.schedule(inputfilename,hyperperiod_factor, d,CRITICAL_TIME,CRITICAL_freq)
+	//	ScheduleRMS_EASS test = new ScheduleRMS_EASS(); 
 	//	test.schedule("test1",10, 2,1.5*10,0.50); // void schedule(String IP_filename, long hyperP, int d) 
 	//System.out.println((long)(3.0/0.05));
 	//	ScheduleRMS_EASS_MWFD_amity schedul1 = new ScheduleRMS_EASS_MWFD_amity();
-	//	MixedAllocation schedul1 = new MixedAllocation();
+		//MixedAllocation schedul1 = new MixedAllocation();
 		//EASS_HAQUE_OVERLOADING schedul1 = new EASS_HAQUE_OVERLOADING();
-		EASS_HAQUE schedul1 = new EASS_HAQUE();
-		schedul1.schedule();
+	//	EASS_HAQUE schedul1 = new EASS_HAQUE();
+	//	schedul1.schedule();
 	//	ScheduleRMS_EASS_MWFD schedul = new ScheduleRMS_EASS_MWFD();
 	//	schedul.schedule();
 	
@@ -134,7 +149,7 @@ public class test {
 	    				"  bcet  "+t.getBCET()+"   acet   "+t.getACET());
 	    	}
 	    	
-	    	System.out.println(GenerateTaskSetTxtUUnifast.worstCaseResp_TDA_RMS(taskset));
+	    	System.out.println(GenerateTaskSetTxtUUnifastMIXED.worstCaseResp_TDA_RMS(taskset));
    
 	    }*/
 	}

@@ -6,6 +6,7 @@
 
 package taskGeneration;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
@@ -45,6 +46,9 @@ public  class Task implements ITask {
 	private double energy_consumed ;
 	private double frequency;
 	private double voltage;
+	
+	 // EESP PARAMETERS HAQUE
+	private  ArrayList<Instance> noInstance= new ArrayList<Instance>() ;
 	
 	//PROCESSOR
 		private Processor p, backupProcessor, primaryProcessor;  //to know primaryProcessor in case of backup task
@@ -141,6 +145,22 @@ public Task(long arrival,long id, long wcet, long period,long deadline, int prio
 	}
 
      
+
+
+/**
+ * @return the noInstance
+ */
+public ArrayList<Instance> getNoInstance() {
+	return noInstance;
+}
+
+/**
+ * @param noInstance the noInstance to set
+ */
+public void addNoInstance(Instance e) {
+	noInstance.add(e) ;
+}
+
 /**
  * @return the primary
  */
@@ -453,6 +473,23 @@ public long getWCET_orginal() {
         //       System.out.println("in task     "+"job id "+jobId.getJobId()+"  task id  " + jobId.getTaskId());
         	Job job = new  Job(jobId, time, WCET_orginal, wcet, time + deadline, period, frequency, (long)(Slack+ time), 
         			BCET, ACET,Best_CET,average_CET);
+        		//getActiveJobs().add(job);
+        		//return job;
+        		return job;
+		}
+	
+	public  Job activateRMS_EESSbackupdelay(long time) {
+        JobId jobId = new JobId(this.getId(),nextJobId++);
+        //       System.out.println("in task     "+"job id "+jobId.getJobId()+"  task id  " + jobId.getTaskId());
+        ArrayList<Instance> cloneInstance = new ArrayList<Instance>(noInstance.size());
+        for (Instance in: noInstance)
+        {
+        	cloneInstance.add(new Instance(in));
+    //   System.out.println(" cloning  size   "+cloneInstance.size());
+        }
+        
+        Job job = new  Job(jobId, time, WCET_orginal, wcet, time + deadline, period, frequency, (long)(Slack+ time), 
+        			BCET, ACET,Best_CET,average_CET,cloneInstance);
         		//getActiveJobs().add(job);
         		//return job;
         		return job;

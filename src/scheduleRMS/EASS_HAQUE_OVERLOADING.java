@@ -37,11 +37,11 @@ import taskGeneration.SystemMetric;
  * ONLY STATIC IMPLEMETATION)
  */
 public class EASS_HAQUE_OVERLOADING {
-	public static final   double  CRITICAL_freq= 0.50;//0.42;   //
+	/*public static final   double  CRITICAL_freq= 0.50;//0.42;   //
 	 public static final long hyperperiod_factor=1;
 	 public static final   double  CRITICAL_TIME=  1.5*10;//hyperperiod_factor;///1500;  //
 	 public static final int d=0;
-		 private double freq=1;
+		 private double freq=1;*/
 	
 	/**
 	 * @throws IOException
@@ -53,23 +53,25 @@ public class EASS_HAQUE_OVERLOADING {
 	 * @throws IOException
 	 */
 	//public void schedule(String IP_filename, long hyperperiod_factor, int d,double CRITICAL_TIME,double CRITICAL_freq) throws IOException
-		 public void schedule() throws IOException
-		 {
-	String inputfilename= "IMPLICIT_TOT_SETS_1000_n_15_MAX_P_1000_Utotal_0.7_27_01_2018_22_36";//IP_filename;
-	FileTaskReaderTxt reader = new FileTaskReaderTxt("D:/CODING/EESS HAQUE OVERLOADING/TASKSET/"+inputfilename+".txt"); // read taskset from file
-	 
+		 public void schedule(String inputfilename,String outputFolder,String inputFolder, long hyperperiod_factor, int d,double CRITICAL_TIME,double CRITICAL_freq) throws IOException
+				 {
+			 System.out.println("Starting over");
+	//String inputfilename= "IMPLICIT_TOT_SETS_1000_n_15_MAX_P_1000_Utotal_0.7_27_01_2018_22_36";//IP_filename;
+	//FileTaskReaderTxt reader = new FileTaskReaderTxt("D:/CODING/EESS HAQUE OVERLOADING/TASKSET/"+inputfilename+".txt"); // read taskset from file
+	 FileTaskReaderTxt reader = new FileTaskReaderTxt(inputFolder+inputfilename); // read taskset from file
+	   
 	//FileTaskReaderTxt reader = new FileTaskReaderTxt("D:/CODING/MWFD results/taskset/"+inputfilename+".txt"); // read taskset from file
     DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
     Calendar cal = Calendar.getInstance();
     String date = dateFormat.format(cal.getTime());
-  String filename= "D:/CODING/EESS HAQUE OVERLOADING/OUTPUT/primary"+"_"+inputfilename+"_"+date+".txt";
-   String filename1= "D:/CODING/EESS HAQUE OVERLOADING/OUTPUT/spare"+"_"+inputfilename+"_"+date+".txt";
+  String filename= outputFolder+"primaryOver"+"_"+inputfilename+"_"+date+".txt";
+   String filename1= outputFolder+"spareOver"+"_"+inputfilename+"_"+date+".txt";
    
-    String filename2= "D:/CODING/EESS HAQUE OVERLOADING/OUTPUT/energyEASS"+"_"+inputfilename+"_"+date+".txt";
-    String filename3= "D:/CODING/EESS HAQUE OVERLOADING/OUTPUT/tasksEASS"+"_"+inputfilename+"_"+date+".txt";
+    String filename2= outputFolder+"energyEASS_OVER"+"_"+inputfilename+"_"+date+".txt";
+    String filename3= outputFolder+"tasksEASS_OVER"+"_"+inputfilename+"_"+date+".txt";
  
-     Writer writer_primary = new FileWriter(filename);
-     Writer writer_spare = new FileWriter(filename1);
+  //   Writer writer_primary = new FileWriter(filename);
+  //   Writer writer_spare = new FileWriter(filename1);
     Writer writer_energy = new FileWriter(filename2);
     Writer writer_tasks = new FileWriter(filename3);
     DecimalFormat twoDecimals = new DecimalFormat("#.##");  // upto 1 decimal points
@@ -87,9 +89,9 @@ public class EASS_HAQUE_OVERLOADING {
     IdleSlot slot = new IdleSlot(); // idle slot
     List <IdleSlot> slots = new ArrayList<IdleSlot>();
     int total_no_tasksets=1;
- //    writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ P_ACTIVE P_IDLE P_SLEEP S_ACTIVE S_IDLE S_SLEEP PRIMARY_ENERGY SPARE_ENERGY NPM TOTAL(S+P) \n");
-    writer_energy.write("TASKSET UTILIZATION SYS_FREQ FREQ PRIMARY_ENERGY SPARE_ENERGY NPM TOTAL(S+P) \n");
-    writer_tasks.write("EASSfullBackupsExecuted partialBackupsExecuted fullBackupsCancelled"
+ //    writer2.write("TASKSET UTILIZATION SYS_FREQ FREQ P_ACTIVE P_IDLE P_SLEEP S_ACTIVE S_IDLE S_SLEEP PRIMARY_ENERGY SPARE_ENERGY TOTAL(S+P) \n");
+    writer_energy.write("overTASKSET UTILIZATION SYS_FREQ FREQ PRIMARY_ENERGY SPARE_ENERGY TOTAL(S+P) \n");
+    writer_tasks.write("EASS_OVERfullBackupsExecuted partialBackupsExecuted fullBackupsCancelled"
     		+ "	 cancelledPrimariesFull   cancelledPrimariesPartial  fullPrimariesExecuted noOfFaults");
    SysClockFreq frequency = new SysClockFreq();
     
@@ -142,7 +144,7 @@ public class EASS_HAQUE_OVERLOADING {
 		
 		
 		
-		long hyper = 100000;//SystemMetric.hyperPeriod(taskset);  /////////////// HYPER PERIOD////////////
+		long hyper = SystemMetric.hyperPeriod(taskset);  //100000;//SystemMetric.hyperPeriod(taskset);  /////////////// HYPER PERIOD////////////
 	    	System.out.println(" hyper  "+hyper);  
 
 	    	
@@ -165,7 +167,7 @@ public class EASS_HAQUE_OVERLOADING {
     	
     	
     	
-		// NPM RESULT////////////////////
+	/*	// NPM RESULT////////////////////
 		  double[] npmResult = new double[5];
 		  NoPowerManag npm = new NoPowerManag();
 		  ArrayList<ITask> taskset_copy = new ArrayList<ITask>();
@@ -173,13 +175,13 @@ public class EASS_HAQUE_OVERLOADING {
 	    	    taskset_copy.add(taskset.get(i).cloneTask_RMS_double()) ;
 	    	   
 	    	}
-		/*	for(ITask t : taskset_copy)
+			for(ITask t : taskset_copy)
 	    	{
 	    	System.out.println("in tasksetcopy id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+"  acet  "+t.getACET());
 	    	
-	    	}*/    	
+	    	}    	
 		 npmResult = npm.schedule(taskset_copy, hyper*hyperperiod_factor);
-	//	ps.setParameterDouble(taskset);	  
+	*///	ps.setParameterDouble(taskset);	  
     	double set_fq = frequency.SysClockF(taskset), fq = 0;
     
     	fq=Math.max(set_fq, CRITICAL_freq);
@@ -311,7 +313,7 @@ public class EASS_HAQUE_OVERLOADING {
 		while(itr.hasNext())
 			System.out.println("promotionTimes   "+itr.next());
 	  	*/
-	  writer_primary.write("\nTASKID av_ACET BCET ACET WCET_or WCET PROM DEADLINE\n");
+/*	  writer_primary.write("\nTASKID av_ACET BCET ACET WCET_or WCET PROM DEADLINE\n");
 		for (ITask t: taskset)
 		{
 			 writer_primary.write("\n"+t.getId()+" "+t.getAverage_CET()+" "
@@ -323,7 +325,7 @@ public class EASS_HAQUE_OVERLOADING {
                		//+ "	 cancelledPrimariesFull   cancelledPrimariesPartial  fullPrimariesExecuted noOfFaults\n");
                writer_spare.write("\nSCHEDULE\nTASKID  JOBID  ARRIVAL Av_CET WCETor DEADLINE  isPreempted STARTTIME ENDTIME  \n");
 
-        nextActivationTime=  activationTimes.pollFirst();
+    */    nextActivationTime=  activationTimes.pollFirst();
         
   // System.out.println("nextActivationTime  "+nextActivationTime);
     	
@@ -396,7 +398,7 @@ public class EASS_HAQUE_OVERLOADING {
 	        	
 	        		//	completedJobs.add(lastExecutedJob);
 	       	   //   System.out.println("time   "+time+"  primary   task  "+current[0].getTaskId()+ "  success of primary and spare  "+current[0].isCompletionSuccess());
-	        		    writer_primary.write(spareEndTime+"spareEndTime");
+//	        		    writer_primary.write(spareEndTime+"spareEndTime");
 	        		   // writer_primary.write(" " +fullBackupsExecuted +" "+partialBackupsExecuted +" "+fullBackupsCancelled+" "+
 	   		  	    	//    cancelledPrimariesFull +" "+  cancelledPrimariesPartial +" "+ fullPrimariesExecuted +" "+noOfFaults+"\n");
 	   		      	
@@ -482,9 +484,9 @@ public class EASS_HAQUE_OVERLOADING {
     					
     					
     					
-    			     writer_spare.write(spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
+    	/*		     writer_spare.write(spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
 	 	  "\t"+spareJob.getRomainingTimeCost()+"\t"+spareJob.getAbsoluteDeadline()+"\t"+spareJob.isPreempted+"\t\t"+time+"\t");
-	          			
+	   */       			
     	 //			System.out.println(" time  "+time+"  spareBusy   "+spareBusy+"  promotion time "+spareJob.getPromotionTime());
     					//spare.setActiveTime(spareActiveTime++);
     				spareEndTime = (long)time + (long) spareJob.getRomainingTimeCost();//.getAverage_CET()*1000 ;////////.getRomainingTimeCost();
@@ -518,12 +520,12 @@ public class EASS_HAQUE_OVERLOADING {
     				long exetime = time-spareJob.getStartTime();
     		//		System.out.println("time   "+time  +"spare job "+spareJob.getTaskId()+"  spareJob.getStartTime()  "+spareJob.getStartTime()+"  exetime  "+exetime);
     				spareJob.setRomainingTimeCost(spareJob.getRomainingTimeCost()-exetime);
-    				 writer_spare.write("\n"+spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"
+    /*				 writer_spare.write("\n"+spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"
     				+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
   					  	  "\t"+spareJob.getRomainingTimeCost()+"\t"+spareJob.getAbsoluteDeadline()+
   					  	  "\t"+spareJob.isPreempted+"\t\t"+spareJob.getStartTime()+"\t");
   					writer_spare.write("\t "+time+"\t  spare  preempted \n");
-  					spareJob.isPreempted=true;
+  	*/				spareJob.isPreempted=true;
   					spareQueue.add(spareJob);
     				
     				Iterator<Job> spareit = spareQueue.iterator();
@@ -538,9 +540,9 @@ public class EASS_HAQUE_OVERLOADING {
     				spareJob.setStartTime(time);
     				spare_current[0]= spareJob;
     				spareEndTime = (long)time + (long) spareJob.getRomainingTimeCost();
-    				 writer_spare.write(spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
+    	/*			 writer_spare.write(spareJob.getTaskId()+"\t  "+spareJob.getJobId()+"\t"+spareJob.getActivationDate()+"\t"+spareJob.getAverage_CET()+
     					  	  "\t"+spareJob.getRomainingTimeCost()+"\t"+spareJob.getAbsoluteDeadline()+"\t"+spareJob.isPreempted+"\t\t"+time+"\t");
-    					        
+    	*/				        
     			}
     			
     		//	System.out.println(time + "   preempted in else"+"  spare empty  "+spareQueue.isEmpty()+"    spareBusy "+ spareBusy);
@@ -561,7 +563,7 @@ public class EASS_HAQUE_OVERLOADING {
 			 spare_current[0].setCompletionSuccess(true);
 		//	 System.out.println("time   "+time  +" active primary job task  "+ current[0].getTaskId());
 		//		System.out.println("time    "+time+"  size  "+activeJobQ.size());
-	   writer_spare.write(spareEndTime+"    spareEndTime\n");
+	//   writer_spare.write(spareEndTime+"    spareEndTime\n");
 	//		 fullBackupsExecuted++;
 		    		    	
 				
@@ -676,7 +678,7 @@ public class EASS_HAQUE_OVERLOADING {
         			// System.out.println("preemption  ");
 
     				primaryBusy=false;
- 			 writer_primary.write("\t"+time+"\t preempted\n");
+ 	//		 writer_primary.write("\t"+time+"\t preempted\n");
     				executedTime = time - current[0].getStartTime();
     				// System.out.println("time   "+time+"  executedTime  "+executedTime);
 
@@ -710,7 +712,7 @@ public class EASS_HAQUE_OVERLOADING {
 	        			//  IDLE SLOTS RECORD
 	                			if (idle!=0)
 	                			{
-	               				 writer_primary.write("  endtime  "+time+"\n");
+	    //           				 writer_primary.write("  endtime  "+time+"\n");
 	                				slot.setLength(idle);  // IF PROCESSOR IS IDLE FROM LONF TIME, RECORD LENGTH OF IDLESLOT
 	                				IdleSlot cloneSlot = (IdleSlot) slot.cloneSlot(); // CLONE THE SLOT
 	                				slots.add(cloneSlot); // ADD THE SLOT TO LIST OR QUEUE
@@ -721,9 +723,9 @@ public class EASS_HAQUE_OVERLOADING {
 	        			current[0]=j;  // TO MAKE IT VISIBLE OUTSIDE BLOCK
     		//		System.out.println("current[0]  "+current[0].getTaskId()+" start time "+(long)time);
 
-	        			 writer_primary.write(j.getTaskId()+"\t  "+j.getJobId()+"\t"+j.getActivationDate()+"\t"+j.getACET()+
+	/*        			 writer_primary.write(j.getTaskId()+"\t  "+j.getJobId()+"\t"+j.getActivationDate()+"\t"+j.getACET()+
 	           	  "\t"+j.getRemainingTime()+"\t"+j.getPromotionTime()+"\t"+j.getAbsoluteDeadline()+"\t"+j.isPreempted+"\t\t"+time+"\t");
-	          			
+	*/          			
 	        			
 	        				j.setStartTime(time);  // other wise start time is one less than current time 
         											// BCOZ START TIME IS EQUAL TO END OF LAST EXECUTED JOB
@@ -753,11 +755,11 @@ public class EASS_HAQUE_OVERLOADING {
 		        			
 	        			if (idle==0)  // if starting of idle slot
 	        			{
-	        			writer_primary.write("\nIDLE SLOT");
+	     //   			writer_primary.write("\nIDLE SLOT");
 	        				slot.setId(id++); // SET ID OF SLOT
 	                        slot.setStartTime(time);// START TIME OF SLOT
 	                        current[0] = null;
-	              writer_primary.write("\tstart time\t"+time+"\t");
+	    //          writer_primary.write("\tstart time\t"+time+"\t");
 	                	}
 	        			
 	        			idle++; // IDLE SLOT LENGTH 
@@ -848,7 +850,7 @@ public class EASS_HAQUE_OVERLOADING {
 		        		lastExecutedJob.setCompletionSuccess(true);//-------------------
 		        	//	completedJobs.add(lastExecutedJob);
 		        	//     System.out.println("time   "+time+"   task  "+lastExecutedJob.getTaskId()+ "  success   "+lastExecutedJob.isCompletionSuccess());
-		  		    writer_primary.write(endTime+" endtime \n");
+//		  		    writer_primary.write(endTime+" endtime \n");
 		  		/*  writer_primary.write(fullBackupsExecuted +" "+partialBackupsExecuted +" "+fullBackupsCancelled+" "+
 		  	    	    cancelledPrimariesFull +" "+  cancelledPrimariesPartial +" "+ fullPrimariesExecuted +" "+noOfFaults+"\n");
 		      	*/
@@ -869,11 +871,11 @@ public class EASS_HAQUE_OVERLOADING {
 			        	//	completedJobs.add(lastExecutedJob);
 			        	  /*   System.out.println("time   "+time+"  spare   task  "+spare_current[0].getTaskId()+
 			        	    		 "  success of  spare and primary  "+spare_current[0].isCompletionSuccess());//+"  id "+spareQueue.first().getTaskId());
-			        	*/     writer_spare.write("\n"+spare_current[0].getTaskId()+"\t  "+spare_current[0].getJobId()+"\t"+spare_current[0].getActivationDate()+"\t"+spare_current[0].getAverage_CET()+
+			        	*/  /*   writer_spare.write("\n"+spare_current[0].getTaskId()+"\t  "+spare_current[0].getJobId()+"\t"+spare_current[0].getActivationDate()+"\t"+spare_current[0].getAverage_CET()+
 			  					  	  "\t"+spare_current[0].getRomainingTimeCost()+"\t"+spare_current[0].getAbsoluteDeadline()+
 			  					  	  "\t"+spare_current[0].isPreempted+"\t\t"+spare_current[0].getStartTime()+"\t");
 			        	     writer_spare.write(endTime+"    endTime\n");
-			        		if( (timeToNextPromotion<=CRITICAL_TIME) && !spareQueue.isEmpty()&& !spareQueue.first().isCompletionSuccess() )//&& !spareQueue.isEmpty()
+			        	*/	if( (timeToNextPromotion<=CRITICAL_TIME) && !spareQueue.isEmpty()&& !spareQueue.first().isCompletionSuccess() )//&& !spareQueue.isEmpty()
 			    				spare.setProc_state(proc_state.IDLE);
 			    			else
 			    				spare.setProc_state(proc_state.SLEEP);
@@ -961,7 +963,7 @@ public class EASS_HAQUE_OVERLOADING {
     */
     	writer_energy.write(total_no_tasksets++ + " "+Double.valueOf(twoDecimals.format(U_SUM))+" "+Double.valueOf(twoDecimals.format(set_fq))+" "
 	    	    +" "+ Double.valueOf(twoDecimals.format(fq)) +" "+Double.valueOf(twoDecimals.format(primaryEnergy))+
-	    	    " "+Double.valueOf(twoDecimals.format(spareEnergy))+" "+Double.valueOf(twoDecimals.format(npmResult[2] ))
+	    	    " "+Double.valueOf(twoDecimals.format(spareEnergy))+" "
 	    	    + " "+ Double.valueOf(twoDecimals.format(spareEnergy+primaryEnergy))+"\n");
     	 writer_tasks.write("\n"+fullBackupsExecuted +" "+partialBackupsExecuted +" "+fullBackupsCancelled+" "+
 	    	    cancelledPrimariesFull +" "+  cancelledPrimariesPartial +" "+ fullPrimariesExecuted +" "+noOfFaults);
@@ -976,11 +978,11 @@ public class EASS_HAQUE_OVERLOADING {
     
     }
     
-    writer_primary.close();
-    writer_spare.close();
+ //   writer_primary.close();
+ //   writer_spare.close();
     writer_energy.close();
      writer_tasks.close();
-    System.out.println("success ScheduleRMS_EASS");
+    System.out.println("success EASS_OVER");
 	}
 	
 	public static void prioritize(ArrayList<ITask> taskset)

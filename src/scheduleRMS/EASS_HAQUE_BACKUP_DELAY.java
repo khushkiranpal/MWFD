@@ -37,7 +37,7 @@ import taskGeneration.SystemMetric;
  *	IMPLEMENTATION OF HAQUE (NO BENEFIT OF BACKUP CANCELLING BY DELAYING THE LOWER PRIORITY BACKUPS
  * ONLY STATIC IMPLEMETATION)
  */
-public class EASS_HAQUE {
+public class EASS_HAQUE_BACKUP_DELAY {
 		 
 		/* public static final   double  CRITICAL_freq= 0.50;//0.42;   //
 		 public static final long hyperperiod_factor=1;
@@ -57,7 +57,7 @@ public class EASS_HAQUE {
 	//public void schedule(String IP_filename, long hyperperiod_factor, int d,double CRITICAL_TIME,double CRITICAL_freq) throws IOException
 		 public void schedule(String inputfilename,String outputFolder,String inputFolder, long hyperperiod_factor, int d,double CRITICAL_TIME,double CRITICAL_freq) throws IOException
 			 {
-			 System.out.println("STARTING EASS");
+			 System.out.println("STARTING EASS_HAQUE_BACKUP_DELAY");
 	//String inputfilename= "IMPLICIT_TOT_SETS_1000_n_15_MAX_P_1000_Utotal_0.7_27_01_2018_22_36";//IP_filename;
 	//FileTaskReaderTxt reader = new FileTaskReaderTxt("D:/CODING/EESS HAQUE/TASKSET/"+inputfilename+".txt"); // read taskset from file
 	 FileTaskReaderTxt reader = new FileTaskReaderTxt(inputFolder+inputfilename); // read taskset from file
@@ -225,7 +225,38 @@ public class EASS_HAQUE {
     	ps.setResponseTime(taskset);    
     	ps.setPromotionTime(taskset);       //SET PROMOTION TIMES
     
-    
+    	
+    	for(ITask t : taskset)
+    	{
+    		int noOfInstances=0;
+    		for(int i=0; taskset.get(i) != t; i++)
+    		{
+    		//	System.out.println("lp  "+t.getId()+" hp "+ taskset.get(i).getId());
+    		ints.setHighPriorTask(taskset.get(i).getId());
+    		ints.setLowPriorTask(t.getId());
+    		noOfInstances=(int) Math.ceil((double)t.getResponseTime()/(double)taskset.get(i).getPeriod());
+    	//	System.out.println("  noOfInstances  "+noOfInstances);
+    		
+    		ints.setNoOfInstances(noOfInstances);
+    		
+    		t.addNoInstance(ints.clone());
+    //		System.out.println("size  "+t.getNoInstance().size());
+    		}   		
+    		
+    		
+//    		System.out.println("in taskset id  "+t.getId()+" wcet  "+t.getWcet()+"  bcet  "+t.getBCET()+"  acet  "+t.getACET());
+//    	System.out.println("promotion    "+t.getSlack()+"   response  "+t.getResponseTime());
+    	}
+    	
+    	/*for(ITask t : taskset)
+    	{
+    		System.out.println(" t  "+t.getId());
+    		for(Instance inst: t.getNoInstance())
+    		{
+    			System.out.println("hp  "+inst.getHighPriorTask()+"  lp  "
+    		+inst.getLowPriorTask()+" value  "+inst.getNoOfInstances());
+    		}
+    	}*/
     	
     	
     	////////////FAULT/////////////////////////FAULT////////////
@@ -269,9 +300,40 @@ public class EASS_HAQUE {
 		for(ITask t : taskset)  // activate all tasks at time 0
 		{
 					temp=0;
-					j =  t.activateRMS_energy_ExecTime(time);  ////	remainingTime =  (long)ACET;  ////////////////
+				//	System.out.println("task  "+t.getId());
+					j =  t.activateRMS_EESSbackupdelay(time);  ////	remainingTime =  (long)ACET;  ////////////////
 					j.setPriority(t.getPriority());
-					spareJobNew = j.cloneJob();
+					spareJobNew = j.cloneJobBackuDelay();
+					
+					//adding instances for backup delaying
+					int noOfInstances=0;
+		    		for(int i=0; taskset.get(i) != t; i++)
+		    		{
+		    			System.out.println("lp  "+t.getId()+" hp "+ taskset.get(i).getId());
+		    		ints.setHighPriorTask(taskset.get(i).getId());
+		    		ints.setLowPriorTask(t.getId());
+		    		noOfInstances=0;
+		    	//	System.out.println("  noOfInstances  "+noOfInstances);
+		    		
+		    		ints.setNoOfInstances(noOfInstances);
+		    		spareJobNew.addCurrentNoOfInstance(ints.clone());
+		    	//	t.addNoInstance(ints.clone());
+		    		}
+		    		
+					if(spareJobNew.getCurrentNoOfInstance().size()>0)
+    				{
+    				System.out.println("SPARE   JOB    "+
+    						" size "+spareJobNew.getCurrentNoOfInstance().size()+
+    						"  task "+spareJobNew.getTaskId());
+    			
+    				for(Instance inst: spareJobNew.getCurrentNoOfInstance())
+    	    		{
+    	    			System.out.println("hp  "+inst.getHighPriorTask()+"  lp  "
+    	    		+inst.getLowPriorTask()+" value  "+inst.getNoOfInstances());
+    	    		}
+    				}
+					// end backup instance adding
+					
 				//	spareJob.setACET(aCET);
 				//	System.out.println("spare acet  "+spareJob.getAverage_CET()+"  primary   "+j.getACET());
 					spareJobNew.setCompletionSuccess(false);
@@ -432,8 +494,19 @@ public class EASS_HAQUE {
     	*/			
     				spareJob= 	spareQueue.pollFirst();
     				spareJob.upperQ=true;
-    	//			System.out.println("SPARE   JOB POLLED   "+spareJob.getPromotionTime()+"  task "+spareJob.getTaskId()+" wcet "+spareJob.getRomainingTimeCost());
-    			//	promotionTimes.remove(0);
+    				/*if(spareJob.getNoInstance().size()>0)
+    				{
+    				System.out.println("SPARE   JOB POLLED   "+spareJob.getPromotionTime()+
+    						" size "+spareJob.getNoInstance().size()+
+    						"  task "+spareJob.getTaskId()+" wcet "+spareJob.getRomainingTimeCost());
+    			
+    				for(Instance inst: spareJob.getNoInstance())
+    	    		{
+    	    			System.out.println("hp  "+inst.getHighPriorTask()+"  lp  "
+    	    		+inst.getLowPriorTask()+" value  "+inst.getNoOfInstances());
+    	    		}
+    				}*/
+    				//	promotionTimes.remove(0);
     				//System.out.println("spare job is faulty  "+spareJob.isFaulty());
     				if (!spareQueue.isEmpty())
     					timeToNextPromotion		= spareQueue.first().getPromotionTime();
@@ -638,7 +711,7 @@ public class EASS_HAQUE {
 			//		System.out.println("  activationTime  "+activationTime);
 					long temp1= (long) activationTime, temp2 =(long) time;
 					if (temp1==temp2)
-						n= t.activateRMS_energy_ExecTime(time); ///	remainingTime =  (long)ACET;  ////////////////
+						n= t.activateRMS_EESSbackupdelay(time); ///	remainingTime =  (long)ACET;  ////////////////
 					
 					if (n!=null)
 					{
@@ -649,7 +722,40 @@ public class EASS_HAQUE {
 					//			+"  period  "+activeJobQ.first().getPeriod());
 			    		// System.out.println(" size  "+activeJobQ.size());
  
-						spareJobNew = n.cloneJob();
+						spareJobNew = n.cloneJobBackuDelay();
+						
+						//adding instances for backup delaying
+						int noOfInstances=0;
+			    		for(int i=0; taskset.get(i) != t; i++)
+			    		{
+			    		//	System.out.println("lp  "+t.getId()+" hp "+ taskset.get(i).getId());
+			    		ints.setHighPriorTask(taskset.get(i).getId());
+			    		ints.setLowPriorTask(t.getId());
+			    		noOfInstances=0;
+			    	//	System.out.println("  noOfInstances  "+noOfInstances);
+			    		
+			    		ints.setNoOfInstances(noOfInstances);
+			    		spareJobNew.addCurrentNoOfInstance(ints.clone());
+			    	//	t.addNoInstance(ints.clone());
+			    		}
+			    		
+						if(spareJobNew.getCurrentNoOfInstance().size()>0)
+	    				{
+	    				System.out.println("SPARE   JOB   time "+time+
+	    						" size "+spareJobNew.getCurrentNoOfInstance().size()+
+	    						"  task "+spareJobNew.getTaskId());
+	    			
+	    				for(Instance inst: spareJobNew.getCurrentNoOfInstance())
+	    	    		{
+	    	    			System.out.println("hp  "+inst.getHighPriorTask()+"  lp  "
+	    	    		+inst.getLowPriorTask()+" value  "+inst.getNoOfInstances());
+	    	    		}
+	    				}
+						// end backup instance adding
+						
+						
+						
+						
 						spareJobNew.upperQ=false;
 						spareJobNew.setCompletionSuccess(false);
 						spareQueue.add(spareJobNew);	    ///////////ADD TO SPARE QUEUE
@@ -896,7 +1002,7 @@ public class EASS_HAQUE {
 		        		while(spareitr.hasNext())
 		        		{
 		        			Job spar = spareitr.next();
-		        			System.out.println("spare jobs  "+time+ " "+ spar.getTaskId() +"  "+ spar.getJobId());
+		        		//	System.out.println("spare jobs deleted at time  "+time+ "  task   "+ spar.getTaskId() +"  "+ spar.getJobId());
 		        			if (spar.getTaskId()==lastExecutedJob.getTaskId() && spar.getJobId()==lastExecutedJob.getJobId())
 		        			{
 		        				

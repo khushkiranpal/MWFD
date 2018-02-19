@@ -33,6 +33,33 @@ public class ParameterSetting {
 		}
 	}
 	
+	
+	public void set_freq_MixedAlloc(ArrayList<ITask> taskset,double frequency)
+	{
+		for (ITask t: taskset)
+		{
+			if (t.isPrimary())
+			{
+			t.setFrequency(frequency);
+		//	t.setWcet( Double.valueOf(twoDecimals.format((double)t.getWcet()/frequency)));
+
+			t.setWcet( Double.valueOf(twoDecimals.format((double)t.getWCET_orginal()/frequency)));
+		//	System.out.println("frequency    "+frequency+"   task  "+t.getId()+"   wcet  "+t.getWcet());
+			t.setBCET(t.getBest_CET()/frequency);
+		//	System.out.println("bcet   "+t.getBCET());
+
+			t.setACET(t.getAverage_CET()/frequency);
+		//	System.out.println("acet   "+t.getACET()+"  avg acet  "  +t.getAverage_CET());
+			/*t.setWCET_orginal(t.getC()*1000);
+			t.setPeriod(t.getT()*1000);
+			t.setDeadline(t.getD()*1000);
+			*/
+			
+			//t.setBCET(t.getBest_CET()*1000);
+			//t.setACET(t.getAverage_CET()*1000);
+			}
+		}
+	}
 	public void setBCET(ArrayList<ITask> taskset, double ratio)
 	{
 		for (ITask t: taskset)
@@ -167,7 +194,58 @@ public class ParameterSetting {
 
 		}*/
 	}
-	
+	public void setResponseTimeMixedOVERLOADING(ArrayList<ITask> taskset, int d)
+	{
+		if(d<1)
+			d=1;
+		double load=0;
+		for(ITask t:taskset)
+      {
+		
+            double w=t.getWcet(),w1=w-1;
+            while(w != w1)
+            {
+                w1 = w;
+                w =t.getWcet();
+                for(int i=0; taskset.get(i) != t; i++)
+                {
+                   if (!taskset.get(i).isPrimary())
+                   {
+                	   load = (Math.ceil((1-(double)(((double)taskset.get(i).getPeriod()/d)/
+                			   (double)t.getPeriod()))*   taskset.get(i).getWcet()));
+              //  	   System.out.println("task i "+t.getId()+" wcet  "+t.getWcet()+"  primary  "+t.isPrimary());
+                   }
+                	   else
+                	   {
+
+                		   load = taskset.get(i).getWcet();
+             //   		   System.out.println("task i "+t.getId()+" wcet  "+t.getWcet()+"  primary  "+t.isPrimary());
+                	   }
+                   
+         /*          System.out.println("tj  "+taskset.get(i).getPeriod()+"   ti  "+t.getPeriod()+
+                    		"   cj   "+taskset.get(i).getWcet());
+                    System.out.println("tj/ti    "+((double)((double)taskset.get(i).getPeriod()/(double)t.getPeriod())+
+                    		"   1-tj/ti  "+(1-((double)((double)taskset.get(i).getPeriod()/(double)t.getPeriod())))));
+                    //+		" load  "+(Math.ceil((1-(double)((double)taskset.get(i).getPeriod()/(double)t.getPeriod()))*
+                      //      		taskset.get(i).getWcet())))));
+                    System.out.println("load   "+load);
+         */       	w += (int) (Math.ceil((double) w1/taskset.get(i).getPeriod())*(load));
+                	 
+                //	w += (int) (Math.ceil((double) w1/taskset.get(i).getPeriod())*taskset.get(i).getWCET_orginal());
+         //      	 System.out.println("task j "+taskset.get(i).getId()+"response time  "+w);
+                }
+            }
+            if( w > t.getDeadline())
+             t.setResponseTime(0);
+            else
+            	t.setResponseTime(w);
+   //      System.out.println("response time  "+w);
+        }
+	/*	for (ITask t : taskset)
+		{
+			System.out.println("task i "+t.getId()+" wcet  "+t.getWcet()+"  response  "+t.getResponseTime());
+		}*/
+	}
 	public void setResponseTimeForMWFD(ArrayList<ITask> taskset)
 	{
 		for(ITask t:taskset)
@@ -182,7 +260,7 @@ public class ParameterSetting {
                 {
                 	
                 	w += (int) (Math.ceil((double) w1/taskset.get(i).getPeriod())*taskset.get(i).getWcet());
-       //        	 System.out.println("task j "+taskset.get(i).getId()+"response time  "+w);
+       //        	 System.out.println("task j "+taskset.get(i).getId()+"   response time  "+w);
                 }
             }
             if( w > t.getDeadline())

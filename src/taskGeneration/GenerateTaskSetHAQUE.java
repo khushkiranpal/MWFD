@@ -92,7 +92,7 @@ public class GenerateTaskSetHAQUE {
         		System.out.println(" count   TOTAL_NUM_TASKSETS  "+count);
         			genTask = new UUniFastDiscardTaskSetGen(gen, nbTasks, Utotal, deadlineModel,MAX_PERIOD, hyperperiod_factor );
 
-     			  tasks = genTask.generate();
+     			  tasks = genTask.generate(hyperperiod_factor);
      			 ArrayList<ITask> taskSet = new  ArrayList<ITask>(Arrays.asList(tasks));
      			long hyper = SystemMetric.hyperPeriod(taskSet);
      			
